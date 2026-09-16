@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+_out/
+tests/_out_test/
+.git/
+*.zip
+local.settings.json
+.env*

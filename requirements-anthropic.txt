@@ -1,0 +1,5 @@
+# Optional deps for MODEL_PROVIDER=anthropic (Claude endpoint, see .env.anthropic).
+# -r requirements.txt
+
+anthropic
+python-dotenv

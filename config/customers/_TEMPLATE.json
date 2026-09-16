@@ -1,0 +1,39 @@
+{
+  "__comment": "Copy this file to <customer_id>.json and edit. Onboarding a new customer requires NO code change — only this file. Call the agent with customer_id=<your file name without .json>.",
+
+  "customer_id": "REPLACE_ME",
+  "description": "Human-readable name of the customer / workbook family.",
+
+  "__comment_sheets": "Add or remove sheet roles here. match_patterns are case-insensitive substrings tested against each tab name (workbook workflow). filename_patterns are the same idea but tested against a standalone reference file's basename instead (see REFERENCE_FILES.md) — punctuation-insensitive, so 'LTP_2026_08.csv' still matches 'ltp'. To support a new sheet -> output, add a new entry and a matching block under 'targets'.",
+  "sheet_config": [
+    { "role": "LTP",                "target": "NEO", "match_patterns": ["ltp", "major component"], "filename_patterns": ["ltp"] },
+    { "role": "MEASUREMENT_POINTS", "target": "LAO", "match_patterns": ["measurement point", "measuring point"], "filename_patterns": ["measurement points", "measuring points"] }
+  ],
+
+  "constants": {
+    "RegistrationCounter": "217040",
+    "StrategyUOMCode": "H",
+    "ReviewStatusCode": "Not Reviewed",
+    "NewStrategyUsageValue": "",
+    "LastStrategyDate": ""
+  },
+
+  "scoring": {
+    "name_weight": 0.60,
+    "value_weight": 0.40,
+    "join_bonus": 0.15,
+    "confidence_cap": 0.99,
+    "bands": { "auto_accept": 0.90, "accept_review": 0.70, "low_review": 0.50 }
+  },
+
+  "normalization": {
+    "join_key_canonical": "FunctionalLoc",
+    "reject_rules": ["missing_join_key", "missing_identity", "banner_row", "gibberish"]
+  },
+
+  "__comment_targets": "One block per output CSV. output_columns is the FIXED header/order. Each field declares source_class: customer_file (mapped by AI+scorer from a column in this workbook), enrichment (filled later by AMT/Xref/IK17 join — left blank, never invented), constant (from 'constants'), or derived (computed by a named transform in core/transforms.py).",
+  "targets": {
+    "NEO": { "source_sheet_role": "LTP", "identity_canonical": "AssetName", "output_columns": ["...copy from default.json..."], "fields": ["...copy & edit aliases per this customer..."] },
+    "LAO": { "source_sheet_role": "MEASUREMENT_POINTS", "identity_canonical": "FunctionalLoc", "output_columns": ["...copy from default.json..."], "fields": ["...copy & edit aliases per this customer..."] }
+  }
+}

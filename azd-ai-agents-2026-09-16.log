@@ -1,0 +1,916 @@
+[2026-09-16T09:52:08+08:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj?api-version=2025-06-01
+[2026-09-16T09:52:10+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-09-16T09:52:10+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj?api-version=2025-06-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armcognitiveservices/v2.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+
+[2026-09-16T09:52:11+08:00] Response: ==> REQUEST/RESPONSE (Try=1/590.7335ms, OpTime=595.3102ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj?api-version=2025-06-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armcognitiveservices/v2.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 1378
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:52:11 GMT
+   Etag: "4700ec6f-0000-1a00-0000-6a97e1670000"
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Envoy-Upstream-Service-Time: REDACTED
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 85f8dfeb-32d4-49f2-9ac1-355f407453e0
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-09-16T09:52:11+08:00] Retry: response 200
+[2026-09-16T09:52:11+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:52:11+08:00] Retry: =====> Try=1 for GET https://graph.microsoft.com/v1.0/me
+[2026-09-16T09:52:14+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://graph.microsoft.com/.default"
+[2026-09-16T09:52:14+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://graph.microsoft.com/v1.0/me
+   Authorization: REDACTED
+   User-Agent: azsdk-go-graph/1.0.0 (go1.26.4-X:loopvar; Windows_NT)
+
+[2026-09-16T09:52:14+08:00] Response: ==> REQUEST/RESPONSE (Try=1/534.8449ms, OpTime=534.8449ms) -- RESPONSE RECEIVED
+   GET https://graph.microsoft.com/v1.0/me
+   Authorization: REDACTED
+   User-Agent: azsdk-go-graph/1.0.0 (go1.26.4-X:loopvar; Windows_NT)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Client-Request-Id: REDACTED
+   Content-Type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+   Date: Wed, 16 Sep 2026 01:52:14 GMT
+   Odata-Version: REDACTED
+   Request-Id: 8a0a9fe0-0e62-4f5b-9fd4-6e49740d69f8
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Ms-Ags-Diagnostic: REDACTED
+   X-Ms-Resource-Unit: REDACTED
+
+[2026-09-16T09:52:14+08:00] Retry: response 200
+[2026-09-16T09:52:14+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:52:14+08:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-09-16T09:52:17+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-09-16T09:52:17+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; Windows_NT)
+
+[2026-09-16T09:52:17+08:00] Response: ==> REQUEST/RESPONSE (Try=1/363.6668ms, OpTime=363.6668ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; Windows_NT)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 7472
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:52:17 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 414f08ef-5abd-4013-b625-9baa31a17fb4
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-09-16T09:52:17+08:00] Retry: response 200
+[2026-09-16T09:52:17+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:52:17+08:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-09-16T09:52:19+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-09-16T09:52:19+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; Windows_NT)
+
+[2026-09-16T09:52:20+08:00] Response: ==> REQUEST/RESPONSE (Try=1/255.9706ms, OpTime=255.9706ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; Windows_NT)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 7472
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:52:19 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 6a1d41a6-1b79-4590-8d9d-9472318edacd
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-09-16T09:52:20+08:00] Retry: response 200
+[2026-09-16T09:52:20+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:52:22+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://ai.azure.com/.default"
+[2026-09-16T09:52:22+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+[2026-09-16T09:52:22+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:52:24+08:00] Response: ==> REQUEST/RESPONSE (Try=1/1.7485894s, OpTime=1.7491009s) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:52:23 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: ae044d8b1af0bd70bba28bd30db5eea2
+   --------------------------------------------------------------------------------
+{
+  "object": "agent",
+  "id": "normalizer-mapper-agent",
+  "name": "normalizer-mapper-agent",
+  "state": "enabled",
+  "versions": {
+    "latest": {
+      "metadata": {
+        "enableVnextExperience": "true",
+        "description": "",
+        "modified_at": "1789521968"
+      },
+      "object": "agent.version",
+      "id": "normalizer-mapper-agent:14",
+      "name": "normalizer-mapper-agent",
+      "version": "14",
+      "description": "",
+      "created_at": 1789522041,
+      "definition": {
+        "kind": "hosted",
+        "container_protocol_versions": [],
+        "tools": [],
+        "reasoning": {},
+        "cpu": "0.5",
+        "memory": "1Gi",
+        "environment_variables": {
+          "AGENT_NORMALIZER_MAPPER_AGENT_ENDPOINT": "\"https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/6\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_INSTANCE_IDENTITY_CLIENT_ID": "\"ab4b3334-d973-4200-af3c-1366768320eb\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_INSTANCE_IDENTITY_PRINCIPAL_ID": "\"ab4b3334-d973-4200-af3c-1366768320eb\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_NAME": "\"normalizer-mapper-agent\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_PROJECT_ENDPOINT": "\"https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_RESPONSES_ENDPOINT": "\"https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/endpoint/protocols/openai/responses?api-version=v1\"",
+          "AGENT_NORMALIZER_MAPPER_AGENT_VERSION": "6",
+          "AI_PROJECT_DEPLOYMENTS": "\"[]\"",
+          "AZD_AGENT_SKIP_ACR": "\"true\"",
+          "AZD_FOUNDRY_ACR_MODE": "\"none\"",
+          "AZURE_AI_ACCOUNT_NAME": "\"aif-schemaupd-dev-aue-001\"",
+          "AZURE_AI_DEPLOYMENTS_LOCATION": "\"australiaeast\"",
+          "AZURE_AI_MODEL_DEPLOYMENT_NAME": "\"gpt-5.6-terra\"",
+          "AZURE_AI_PROJECT_ID": "\"/subscriptions/2ad74598-7432-4dab-8399-ce7b8807d965/resourceGroups/rg-schemaupdate-dev-aue-001/providers/Microsoft.CognitiveServices/accounts/aif-schemaupd-dev-aue-001/projects/aif-schemaupd-dev-aue-proj\"",
+          "AZURE_AI_PROJECT_NAME": "\"aif-schemaupd-dev-aue-proj\"",
+          "AZURE_ENV_NAME": "\"normalizer-mapper-agent-dev\"",
+          "AZURE_LOCATION": "\"australiaeast\"",
+          "AZURE_OPENAI_ENDPOINT": "\"https://aif-schemaupd-dev-aue-001.openai.azure.com/\"",
+          "AZURE_RESOURCE_GROUP": "\"rg-schemaupdate-dev-aue-001\"",
+          "AZURE_SUBSCRIPTION_ID": "\"2ad74598-7432-4dab-8399-ce7b8807d965\"",
+          "AZURE_TENANT_ID": "\"2962430a-cecc-45d5-90a9-a6a2122da4a1\"",
+          "ENABLE_CAPABILITY_HOST": "\"false\"",
+          "ENABLE_HOSTED_AGENTS": "\"true\"",
+          "FOUNDRY_PROJECT_ENDPOINT": "\"https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj\"",
+          "USE_EXISTING_AI_PROJECT": "\"true\""
+        },
+        "protocol_versions": [
+          {
+            "protocol": "responses",
+            "version": "2.0.0"
+          }
+        ],
+        "code_configuration": {
+          "runtime": "python_3_13",
+          "entry_point": [
+            "python",
+            "foundry_app.py"
+          ],
+          "dependency_resolution": "remote_build",
+          "content_hash": "f8f578dfe719e10656e42cfd3b4f46cd0e919019774158af24b3803d11bb17e5"
+        }
+      },
+      "draft": false,
+      "status": "active",
+      "instance_identity": {
+        "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+        "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+      },
+      "blueprint": {
+        "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+        "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+      },
+      "blueprint_reference": {
+        "type": "ManagedAgentIdentityBlueprint",
+        "blueprint_id": "normalizer-mapper-agent-53347"
+      },
+      "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+    }
+  },
+  "agent_endpoint": {
+    "version_selector": {
+      "version_selection_rules": [
+        {
+          "type": "FixedRatio",
+          "agent_version": "@latest",
+          "traffic_percentage": 100
+        }
+      ]
+    },
+    "protocols": [
+      "responses"
+    ],
+    "protocol_configuration": {
+      "responses": {}
+    },
+    "authorization_schemes": [
+      {
+        "type": "Entra"
+      }
+    ],
+    "publish_approval_status": "not_published"
+  },
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "configuration_state": "enabled"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:52:24+08:00] Retry: response 200
+[2026-09-16T09:52:24+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:52:24+08:00] Retry: =====> Try=1 for POST https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+[2026-09-16T09:52:24+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   POST https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+   Authorization: REDACTED
+   Content-Length: 97399454
+   Content-Type: multipart/form-data; boundary=7140fe4103f3f4e4e9c14e6690767c59afe59c75f45ec51bbf8384298cfc
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Code-Zip-Sha256: REDACTED
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Skip logging body for multipart/form-data; boundary=7140fe4103f3f4e4e9c14e6690767c59afe59c75f45ec51bbf8384298cfc
+
+[2026-09-16T09:53:24+08:00] Response: ==> REQUEST/RESPONSE (Try=1/59.5303254s, OpTime=59.5303254s) -- RESPONSE RECEIVED
+   POST https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent?api-version=v1
+   Authorization: REDACTED
+   Content-Length: 97399454
+   Content-Type: multipart/form-data; boundary=7140fe4103f3f4e4e9c14e6690767c59afe59c75f45ec51bbf8384298cfc
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Code-Zip-Sha256: REDACTED
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:53:23 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 6c05fbe1c68f902043ab07dad152c2e3
+   --------------------------------------------------------------------------------
+{
+  "object": "agent",
+  "id": "normalizer-mapper-agent",
+  "name": "normalizer-mapper-agent",
+  "state": "enabled",
+  "versions": {
+    "latest": {
+      "metadata": {
+        "enableVnextExperience": "true"
+      },
+      "object": "agent.version",
+      "id": "normalizer-mapper-agent:15",
+      "name": "normalizer-mapper-agent",
+      "version": "15",
+      "description": "",
+      "created_at": 1789523603,
+      "definition": {
+        "kind": "hosted",
+        "container_protocol_versions": [],
+        "cpu": "0.5",
+        "memory": "1Gi",
+        "environment_variables": {
+          "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+        },
+        "protocol_versions": [
+          {
+            "protocol": "responses",
+            "version": "2.0.0"
+          }
+        ],
+        "code_configuration": {
+          "runtime": "python_3_13",
+          "entry_point": [
+            "python",
+            "foundry_app.py"
+          ],
+          "dependency_resolution": "remote_build",
+          "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+        }
+      },
+      "draft": false,
+      "status": "creating",
+      "instance_identity": {
+        "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+        "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+      },
+      "blueprint": {
+        "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+        "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+      },
+      "blueprint_reference": {
+        "type": "ManagedAgentIdentityBlueprint",
+        "blueprint_id": "normalizer-mapper-agent-53347"
+      },
+      "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+    }
+  },
+  "agent_endpoint": {
+    "version_selector": {
+      "version_selection_rules": [
+        {
+          "type": "FixedRatio",
+          "agent_version": "@latest",
+          "traffic_percentage": 100
+        }
+      ]
+    },
+    "protocols": [
+      "responses"
+    ],
+    "protocol_configuration": {
+      "responses": {}
+    },
+    "authorization_schemes": [
+      {
+        "type": "Entra"
+      }
+    ],
+    "publish_approval_status": "not_published"
+  },
+  "configuration_state": "enabled"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:53:24+08:00] Retry: response 200
+[2026-09-16T09:53:24+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:53:37+08:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://ai.azure.com/.default"
+[2026-09-16T09:53:37+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:53:37+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:53:37+08:00] Response: ==> REQUEST/RESPONSE (Try=1/331.0207ms, OpTime=331.0207ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:53:36 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 52c5d7a31a6917b294edfc6fbabed3e1
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "creating",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:53:37+08:00] Retry: response 200
+[2026-09-16T09:53:37+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:53:47+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:53:47+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:53:47+08:00] Response: ==> REQUEST/RESPONSE (Try=1/547.4458ms, OpTime=547.4458ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:53:47 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 70cf966b65485cf15ca60e7fc41c750f
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "creating",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:53:47+08:00] Retry: response 200
+[2026-09-16T09:53:47+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:53:57+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:53:57+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:53:58+08:00] Response: ==> REQUEST/RESPONSE (Try=1/545.5627ms, OpTime=545.5627ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:53:58 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 60d21973731380d3dd876641650ac953
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "creating",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:53:58+08:00] Retry: response 200
+[2026-09-16T09:53:58+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:54:08+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:54:08+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:54:09+08:00] Response: ==> REQUEST/RESPONSE (Try=1/790.2759ms, OpTime=790.2759ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:54:08 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 03f976abb61703987c51298148222a0d
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "creating",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:54:09+08:00] Retry: response 200
+[2026-09-16T09:54:09+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:54:19+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:54:19+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:54:20+08:00] Response: ==> REQUEST/RESPONSE (Try=1/742.8584ms, OpTime=742.8584ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:54:19 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 7a09b5d739ef10235ae8f587a5cece03
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:54:20+08:00] Retry: response 200
+[2026-09-16T09:54:20+08:00] Retry: exit due to non-retriable status code
+[2026-09-16T09:54:30+08:00] Retry: =====> Try=1 for GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+[2026-09-16T09:54:30+08:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   Request contained no body
+
+[2026-09-16T09:54:30+08:00] Response: ==> REQUEST/RESPONSE (Try=1/729.406ms, OpTime=729.406ms) -- RESPONSE RECEIVED
+   GET https://aif-schemaupd-dev-aue-001.services.ai.azure.com/api/projects/aif-schemaupd-dev-aue-proj/agents/normalizer-mapper-agent/versions/15?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; Windows_NT),azd-ext-azure-ai-agents/1.0.0-beta.13
+   X-Ms-Correlation-Request-Id: 6256b9a3-07cf-af6b-30c9-34602c194c22
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Wed, 16 Sep 2026 01:54:30 GMT
+   Request-Context: REDACTED
+   Server: istio-envoy
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 6e2c2754d963585e0459705bebea5157
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "normalizer-mapper-agent:15",
+  "name": "normalizer-mapper-agent",
+  "version": "15",
+  "description": "",
+  "created_at": 1789523603,
+  "definition": {
+    "kind": "hosted",
+    "container_protocol_versions": [],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.6-terra"
+    },
+    "protocol_versions": [
+      {
+        "protocol": "responses",
+        "version": "2.0.0"
+      }
+    ],
+    "code_configuration": {
+      "runtime": "python_3_13",
+      "entry_point": [
+        "python",
+        "foundry_app.py"
+      ],
+      "dependency_resolution": "remote_build",
+      "content_hash": "d0700e2e828c57c35a88b9c003edf96555c652d911ddb1d1b33fb440746e130c"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "ab4b3334-d973-4200-af3c-1366768320eb",
+    "client_id": "ab4b3334-d973-4200-af3c-1366768320eb"
+  },
+  "blueprint": {
+    "principal_id": "d77ba839-2d4a-4570-bce0-0686c018e405",
+    "client_id": "0955c726-2b96-426f-87c9-60d377368a75"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "normalizer-mapper-agent-53347"
+  },
+  "agent_guid": "53347b1c-22e7-4526-a320-44703b107706"
+}
+   --------------------------------------------------------------------------------
+
+[2026-09-16T09:54:30+08:00] Retry: response 200
+[2026-09-16T09:54:30+08:00] Retry: exit due to non-retriable status code
+2026/09/16 09:54:31 postdeploy: no optimization candidate for normalizer-mapper-agent, skipping

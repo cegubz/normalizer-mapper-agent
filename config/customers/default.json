@@ -1,0 +1,521 @@
+{
+  "customer_id": "default",
+  "description": "Default customer profile (CB MM LTP workbook). Copy _TEMPLATE.json to add a new customer.",
+  "sheet_config": [
+    {
+      "role": "LTP",
+      "target": "NEO",
+      "match_patterns": [
+        "ltp",
+        "major component",
+        "replacement schedule",
+        "parts",
+        "billiton"
+      ],
+      "__comment_filename_patterns": "Matched against a standalone reference file's basename (see REFERENCE_FILES.md), not a workbook tab — punctuation-insensitive, so 'LTP_2026_08.csv' matches 'ltp' just like 'LTP.csv' does. Add more as new naming conventions show up.",
+      "filename_patterns": [
+        "ltp"
+      ]
+    },
+    {
+      "role": "MEASUREMENT_POINTS",
+      "target": "LAO",
+      "match_patterns": [
+        "measurement point",
+        "measuring point",
+        "meas point",
+        "IK07","ik07"
+      ],
+      "filename_patterns": [
+        "measurement points",
+        "measuring points",
+        "meas points",
+        "ik07"
+      ]
+    }
+  ],
+  "constants": {
+    "RegistrationCounter": "217040",
+    "StrategyUOMCode": "H",
+    "ReviewStatusCode": "Not Reviewed",
+    "NewStrategyUsageValue": "",
+    "LastStrategyDate": ""
+  },
+  "scoring": {
+    "name_weight": 0.6,
+    "value_weight": 0.4,
+    "join_bonus": 0.15,
+    "confidence_cap": 0.99,
+    "bands": {
+      "auto_accept": 0.9,
+      "accept_review": 0.7,
+      "low_review": 0.5
+    },
+    "min_name_gate": 0.55,
+    "gate_penalty": 0.75
+  },
+  "normalization": {
+    "join_key_canonical": "FunctionalLoc",
+    "join_key_role": "MEASUREMENT_POINTS",
+    "reject_rules": [
+      "missing_join_key",
+      "missing_identity",
+      "banner_row",
+      "gibberish"
+    ]
+  },
+  "targets": {
+    "NEO": {
+      "source_sheet_role": "LTP",
+      "identity_canonical": "AssetName",
+      "output_columns": [
+        "BranchCode",
+        "SiteCode",
+        "FleetCode",
+        "CustomerCode",
+        "ModelCode",
+        "AssetName",
+        "SerialNumber",
+        "RegistrationCounter",
+        "ComponentCode",
+        "ModifierCode",
+        "TaskTypeCode",
+        "TaskCounterCode",
+        "StrategyTaskDescription",
+        "FrequencyValue",
+        "LifeToDateValue",
+        "PrimaryPartNumberCode",
+        "NextPartNumberCode",
+        "SourceOfSupplyCode",
+        "StrategyUOMCode",
+        "StrategyUsageValue",
+        "NewStrategyUsageValue",
+        "StrategyDate",
+        "NewStrategyDate",
+        "SalesStatusCode",
+        "ReviewStatusCode",
+        "PartClassificationCode",
+        "SalesLostReasonCode",
+        "SalesStatusCommentsNote",
+        "PurchaseOrderNumber"
+      ],
+      "fields": [
+        {
+          "canonical": "ModelCode",
+          "source_class": "customer_file",
+          "dtype": "model",
+          "aliases": [
+            "type",
+            "model",
+            "model code",
+            "machine model"
+          ]
+        },
+        {
+          "canonical": "AssetName",
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "equipment",
+            "asset",
+            "asset name",
+            "unit",
+            "machine"
+          ]
+        },
+        {
+          "canonical": "TaskCounterCode",
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "group counter",
+            "task counter",
+            "sequence"
+          ]
+        },
+        {
+          "canonical": "StrategyTaskDescription",
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "task name",
+            "strategy task",
+            "st description",
+            "activity"
+          ]
+        },
+        {
+          "canonical": "FrequencyValue",
+          "source_class": "customer_file",
+          "dtype": "numeric",
+          "aliases": [
+            "strategy",
+            "frequency",
+            "interval",
+            "strategy usage"
+          ]
+        },
+        {
+          "canonical": "StrategyUsageValue",
+          "source_class": "enrichment",
+          "join": "Strategy_Usage"
+        },
+        {
+          "canonical": "StrategyDate",
+          "source_class": "customer_file",
+          "dtype": "date",
+          "transform": "to_yyyymmdd",
+          "aliases": [
+            "component due date",
+            "strategy date",
+            "component due"
+          ]
+        },
+        {
+          "canonical": "NewStrategyDate",
+          "source_class": "customer_file",
+          "dtype": "date",
+          "transform": "to_yyyymmdd",
+          "aliases": [
+            "start",
+            "start date",
+            "due date",
+            "planned start"
+          ]
+        },
+        {
+          "canonical": "FunctionalLoc",
+          "source_class": "customer_file",
+          "dtype": "floc",
+          "join_key": true,
+          "aliases": [
+            "function location",
+            "functional location",
+            "floc"
+          ]
+        },
+        {
+          "canonical": "RegistrationCounter",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "StrategyUOMCode",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "ReviewStatusCode",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "NewStrategyUsageValue",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "SalesLostReasonCode",
+          "source_class": "derived",
+          "transform": "sales_lost_reason",
+          "depends_on": [
+            "SalesStatusCode"
+          ]
+        },
+        {
+          "canonical": "SourceOfSupplyCode",
+          "source_class": "derived",
+          "transform": "source_of_supply",
+          "depends_on": [
+            "PrimaryPartNumberCode"
+          ]
+        },
+        {
+          "canonical": "BranchCode",
+          "source_class": "enrichment",
+          "join": "Branch"
+        },
+        {
+          "canonical": "SiteCode",
+          "source_class": "enrichment",
+          "join": "Site"
+        },
+        {
+          "canonical": "FleetCode",
+          "source_class": "enrichment",
+          "join": "Fleet"
+        },
+        {
+          "canonical": "CustomerCode",
+          "source_class": "enrichment",
+          "join": "Customer"
+        },
+        {
+          "canonical": "SerialNumber",
+          "source_class": "enrichment",
+          "join": "Serial_Number"
+        },
+        {
+          "canonical": "ComponentCode",
+          "source_class": "enrichment",
+          "join": "Component_Code"
+        },
+        {
+          "canonical": "ModifierCode",
+          "source_class": "enrichment",
+          "join": "Modifier_Code"
+        },
+        {
+          "canonical": "TaskTypeCode",
+          "source_class": "enrichment",
+          "join": "Task_Type"
+        },
+        {
+          "canonical": "LifeToDateValue",
+          "source_class": "enrichment",
+          "join": "Life_to_Date"
+        },
+        {
+          "canonical": "PrimaryPartNumberCode",
+          "source_class": "enrichment",
+          "join": "Primary_Part_Number"
+        },
+        {
+          "canonical": "NextPartNumberCode",
+          "source_class": "enrichment",
+          "join": "Next_Part_Number"
+        },
+        {
+          "canonical": "SalesStatusCode",
+          "source_class": "enrichment",
+          "join": "Sales_Status"
+        },
+        {
+          "canonical": "PartClassificationCode",
+          "source_class": "enrichment",
+          "join": "Part_Classification"
+        },
+        {
+          "canonical": "SalesStatusCommentsNote",
+          "source_class": "enrichment",
+          "join": "Comments"
+        },
+        {
+          "canonical": "PurchaseOrderNumber",
+          "source_class": "enrichment",
+          "join": "PO_Number"
+        }
+      ]
+    },
+    "LAO": {
+      "source_sheet_role": "MEASUREMENT_POINTS",
+      "identity_canonical": "FunctionalLoc",
+      "output_columns": [
+        "BranchCode",
+        "SiteCode",
+        "FleetCode",
+        "CustomerCode",
+        "ModelCode",
+        "AssetName",
+        "SerialNumber",
+        "RegistrationCounter",
+        "ComponentCode",
+        "ModifierCode",
+        "TaskTypeCode",
+        "TaskCounterCode",
+        "StrategyTaskDescription",
+        "FrequencyValue",
+        "LifeToDateValue",
+        "PrimaryPartNumberCode",
+        "ActualPartNumberCode",
+        "SourceOfSupplyCode",
+        "StrategyUOMCode",
+        "StrategyUsageValue",
+        "LastStrategyUsageValue",
+        "StrategyDate",
+        "LastStrategyDate",
+        "SalesStatusCode",
+        "SalesLostReasonCode",
+        "SalesStatusCommentsNote",
+        "PurchaseOrderNumber"
+      ],
+      "fields": [
+        {
+          "canonical": "FunctionalLoc",
+          "source_class": "customer_file",
+          "dtype": "floc",
+          "join_key": true,
+          "aliases": [
+            "functional location",
+            "function location",
+            "floc"
+          ]
+        },
+        {
+          "canonical": "StrategyTaskDescription",
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "description of measuring point",
+            "description",
+            "desc"
+          ]
+        },
+        {
+          "canonical": "FrequencyValue",
+          "source_class": "customer_file",
+          "dtype": "numeric",
+          "aliases": [
+            "annual estimate",
+            "annual est",
+            "frequency"
+          ]
+        },
+        {
+          "canonical": "LifeToDateValue",
+          "source_class": "customer_file",
+          "dtype": "numeric",
+          "aliases": [
+            "counter reading",
+            "life to date",
+            "counter"
+          ]
+        },
+        {
+          "canonical": "MeasTotCtr",
+          "source_class": "customer_file",
+          "dtype": "numeric",
+          "aliases": [
+            "meas/totcountrrdg",
+            "meas/totctr",
+            "total counter reading",
+            "measured total counter reading"
+          ]
+        },
+        {
+          "canonical": "RegistrationCounter",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "StrategyUOMCode",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "LastStrategyDate",
+          "source_class": "constant"
+        },
+        {
+          "canonical": "LastStrategyUsageValue",
+          "source_class": "derived",
+          "transform": "meas_minus_counter",
+          "depends_on": [
+            "MeasTotCtr",
+            "LifeToDateValue"
+          ]
+        },
+        {
+          "canonical": "SalesLostReasonCode",
+          "source_class": "derived",
+          "transform": "sales_lost_reason",
+          "depends_on": [
+            "SalesStatusCode"
+          ]
+        },
+        {
+          "canonical": "SourceOfSupplyCode",
+          "source_class": "derived",
+          "transform": "source_of_supply",
+          "depends_on": [
+            "PrimaryPartNumberCode"
+          ]
+        },
+        {
+          "canonical": "BranchCode",
+          "source_class": "enrichment",
+          "join": "Branch"
+        },
+        {
+          "canonical": "SiteCode",
+          "source_class": "enrichment",
+          "join": "Site"
+        },
+        {
+          "canonical": "FleetCode",
+          "source_class": "enrichment",
+          "join": "Fleet"
+        },
+        {
+          "canonical": "CustomerCode",
+          "source_class": "enrichment",
+          "join": "Customer"
+        },
+        {
+          "canonical": "ModelCode",
+          "source_class": "enrichment",
+          "join": "Model"
+        },
+        {
+          "canonical": "AssetName",
+          "source_class": "enrichment",
+          "join": "Equipment"
+        },
+        {
+          "canonical": "SerialNumber",
+          "source_class": "enrichment",
+          "join": "Serial_Number"
+        },
+        {
+          "canonical": "ComponentCode",
+          "source_class": "enrichment",
+          "join": "Component_Code"
+        },
+        {
+          "canonical": "ModifierCode",
+          "source_class": "enrichment",
+          "join": "Modifier_Code"
+        },
+        {
+          "canonical": "TaskTypeCode",
+          "source_class": "enrichment",
+          "join": "Task_Type"
+        },
+        {
+          "canonical": "TaskCounterCode",
+          "source_class": "enrichment",
+          "join": "Task_Counter"
+        },
+        {
+          "canonical": "PrimaryPartNumberCode",
+          "source_class": "enrichment",
+          "join": "Primary_Part_Number"
+        },
+        {
+          "canonical": "ActualPartNumberCode",
+          "source_class": "enrichment",
+          "join": "Next_Part_Number"
+        },
+        {
+          "canonical": "StrategyUsageValue",
+          "source_class": "enrichment",
+          "join": "Strategy_Usage"
+        },
+        {
+          "canonical": "StrategyDate",
+          "source_class": "enrichment",
+          "join": "Strategy_Date"
+        },
+        {
+          "canonical": "SalesStatusCode",
+          "source_class": "enrichment",
+          "join": "Sales_Status"
+        },
+        {
+          "canonical": "SalesStatusCommentsNote",
+          "source_class": "enrichment",
+          "join": "Comments"
+        },
+        {
+          "canonical": "PurchaseOrderNumber",
+          "source_class": "enrichment",
+          "join": "PO_Number"
+        }
+      ]
+    }
+  }
+}
