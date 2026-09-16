@@ -10,6 +10,7 @@
     "USE_LLM": "true",
     "STORAGE_BACKEND": "local",
     "OUTPUT_CONTAINER": "outputs",
-    "AZURE_STORAGE_CONNECTION_STRING": ""
+    "AZURE_STORAGE_CONNECTION_STRING": "",
+    "AZURE_STORAGE_ACCOUNT_URL": ""
   }
 }

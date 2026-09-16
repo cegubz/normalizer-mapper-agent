@@ -8,4 +8,5 @@ azure-identity  # only needed for the no-SAS/no-connection-string Entra ID auth 
 starlette
 azure-ai-agentserver-responses
 azure-ai-projects
+httpx
 #yes

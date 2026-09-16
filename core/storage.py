@@ -17,8 +17,14 @@ from .settings import settings
 class LocalStorage:
     def __init__(self, output_dir: str | None = None):
         self.output_dir = output_dir or settings.LOCAL_OUTPUT_DIR
-        os.makedirs(self.output_dir, exist_ok=True)
+        try:
+            os.makedirs(self.output_dir, exist_ok=True)
+        except OSError as exc:
+            raise RuntimeError(
+                "Cant create local output"
+            )
 
+    
     def fetch_input(self, ref: dict) -> str:
         """ref = {'path': ...} or {'content_base64': ..., 'filename': ...}. Returns local path."""
         if ref.get("path"):
@@ -39,10 +45,21 @@ class LocalStorage:
         return dest
 
 
+def _derive_output_container(input_container: str | None, default_container: str) -> str:
+    """The output container mirrors the input container's name, with "inbound" swapped
+    for "outbound" (e.g. "fmg-inbound" -> "fmg-outbound"). Falls back to
+    `default_container` (settings.OUTPUT_CONTAINER) when the input container is unknown
+    (e.g. the input arrived as content_base64) or doesn't follow that naming."""
+    if input_container and "inbound" in input_container.lower():
+        lower = input_container.lower()
+        idx = lower.index("inbound")
+        return input_container[:idx] + "outbound" + input_container[idx + len("inbound"):]
+    return default_container
+
+
 class AzureBlobStorage:
-    """Requires azure-storage-blob (+ azure-identity for the no-SAS/no-connection-string
-    auth fallback). `ref["path"]` in fetch_input accepts three shapes, in order of how
-    directly they name a blob:
+    """Requires azure-storage-blob (+ azure-identity for Entra ID auth). `ref["path"]`
+    in fetch_input accepts three shapes, in order of how directly they name a blob:
 
       1. A full blob URL with a SAS token already embedded (```https://acct.blob.core.
          windows.net/container/blob.csv?sv=...&sig=...```) — used exactly as given, no
@@ -51,19 +68,26 @@ class AzureBlobStorage:
       2. A full blob URL with no SAS token — authenticated via
          AZURE_STORAGE_CONNECTION_STRING if set, else via Entra ID
          (DefaultAzureCredential: the Function/Hosted Agent's managed identity in
-         Azure, or `az login` locally) — same auth story as the Foundry model gateway
-         in core/llm_mapper.py.
-      3. A bare "<container>/<blob_name>" path (no scheme) — always resolved via
-         AZURE_STORAGE_CONNECTION_STRING against the configured account.
+         Azure, or `az login` locally) against that URL's own account — same auth
+         story as the Foundry model gateway in core/llm_mapper.py.
+      3. A bare "<container>/<blob_name>" path (no scheme) — resolved against
+         AZURE_STORAGE_CONNECTION_STRING if set, else against AZURE_STORAGE_ACCOUNT_URL
+         via Entra ID.
+
+    Outputs are written back to the same storage account (AZURE_STORAGE_CONNECTION_STRING
+    or AZURE_STORAGE_ACCOUNT_URL — a full input blob URL's own host is not reused for
+    outputs), in a container derived from the *input* blob's container — see
+    _derive_output_container — falling back to OUTPUT_CONTAINER when that can't be
+    determined.
     """
 
     def __init__(self):
         self.conn = settings.AZURE_STORAGE_CONNECTION_STRING
-        self.container = settings.OUTPUT_CONTAINER
-        # No connection-string requirement here: fetch_input() can authenticate a full
-        # blob URL via Entra ID (DefaultAzureCredential) instead — see _client_for().
-        # write_csv() still requires one (upload isn't wired for Entra ID yet) and
-        # checks for it itself, with a clearer error at the point it's actually needed.
+        self.account_url = settings.AZURE_STORAGE_ACCOUNT_URL
+        self.default_container = settings.OUTPUT_CONTAINER
+        # Set by fetch_input() from the input blob's own path, so write_csv() can derive
+        # the matching output container (e.g. fmg-inbound -> fmg-outbound).
+        self._input_container: str | None = None
 
     def _blob_client(self, path: str):
         if path.startswith("http://") or path.startswith("https://"):
@@ -80,7 +104,7 @@ class AzureBlobStorage:
         container, _, blob_name = path.partition("/")
         if not blob_name:
             raise ValueError(f"bare blob path {path!r} must be '<container>/<blob_name>'")
-        return self._client_for(container, blob_name)
+        return self._client_for(container, blob_name, self.account_url or None)
 
     def _client_for(self, container: str, blob_name: str, account_url: str | None = None):
         if self.conn:
@@ -89,15 +113,29 @@ class AzureBlobStorage:
             return service.get_blob_client(container=container, blob=blob_name)
         if not account_url:
             raise RuntimeError(
-                "AZURE_STORAGE_CONNECTION_STRING not set and no full blob URL host to "
-                "fall back to Entra ID auth against — pass a full blob URL or set the "
-                "connection string."
+                "Neither AZURE_STORAGE_CONNECTION_STRING nor AZURE_STORAGE_ACCOUNT_URL "
+                "is set, and no full blob URL host to fall back to Entra ID auth "
+                "against — pass a full blob URL or set one of those env vars."
             )
         from azure.identity import DefaultAzureCredential
         from azure.storage.blob import BlobClient
         return BlobClient(
             account_url=account_url, container_name=container, blob_name=blob_name,
             credential=DefaultAzureCredential(),
+        )
+
+    def _service_client(self):
+        """BlobServiceClient for the configured output account (connection string wins,
+        else Entra ID via AZURE_STORAGE_ACCOUNT_URL) — used for output uploads."""
+        from azure.storage.blob import BlobServiceClient
+        if self.conn:
+            return BlobServiceClient.from_connection_string(self.conn)
+        if self.account_url:
+            from azure.identity import DefaultAzureCredential
+            return BlobServiceClient(account_url=self.account_url, credential=DefaultAzureCredential())
+        raise RuntimeError(
+            "Neither AZURE_STORAGE_CONNECTION_STRING nor AZURE_STORAGE_ACCOUNT_URL is "
+            "set — required to write outputs."
         )
 
     def fetch_input(self, ref: dict) -> str:
@@ -116,6 +154,11 @@ class AzureBlobStorage:
         if not path:
             raise ValueError("input ref must contain 'path' or 'content_base64'")
 
+        if path.startswith("http://") or path.startswith("https://"):
+            self._input_container = unquote(urlsplit(path).path).lstrip("/").split("/", 1)[0]
+        else:
+            self._input_container = path.split("/", 1)[0]
+
         blob_client = self._blob_client(path)
         filename = ref.get("filename") or os.path.basename(unquote(path.split("?")[0]))
         fd, tmp = tempfile.mkstemp(suffix="_" + (filename or "input"))
@@ -124,16 +167,15 @@ class AzureBlobStorage:
         return tmp
 
     def write_csv(self, df: pd.DataFrame, name: str, run_id: str) -> str:
-        if not self.conn:
-            raise RuntimeError(
-                "AZURE_STORAGE_CONNECTION_STRING not set — required to write outputs "
-                "(upload isn't wired for Entra ID auth yet, unlike fetch_input)."
-            )
-        from azure.storage.blob import BlobServiceClient
-        service = BlobServiceClient.from_connection_string(self.conn)
-        blob_client = service.get_blob_client(container=self.container, blob=f"{run_id}/{name}")
+        container = _derive_output_container(self._input_container, self.default_container)
+        blob_name = f"{run_id}/{name}"
+        service = self._service_client()
+        blob_client = service.get_blob_client(container=container, blob=blob_name)
         blob_client.upload_blob(df.to_csv(index=False).encode("utf-8"), overwrite=True)
-        return blob_client.url
+        # Bare "<container>/<blob_name>" — mirrors the shorthand accepted for input paths
+        # (agent._normalize_ref) rather than a full URL; same account as the request's
+        # configured AZURE_STORAGE_CONNECTION_STRING / AZURE_STORAGE_ACCOUNT_URL.
+        return f"{container}/{blob_name}"
 
 
 def get_storage(output_dir: str | None = None):

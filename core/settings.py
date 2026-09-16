@@ -96,9 +96,19 @@ class Settings:
             return bool(self.ANTHROPIC_API_KEY)
         return bool(self.OPENAI_API_KEY)
 
-    # --- Storage (placeholder for Azure Blob wiring) ---
-    STORAGE_BACKEND: str = os.getenv("STORAGE_BACKEND", "local")  # local | azure_blob
+    # --- Storage ---
+    STORAGE_BACKEND: str = os.getenv("STORAGE_BACKEND", "local").strip().lower()  # local | azure_blob
+    # Either of these authenticates AzureBlobStorage against the account — connection
+    # string wins when both are set:
+    #   - AZURE_STORAGE_CONNECTION_STRING: full connection string (account key auth).
+    #   - AZURE_STORAGE_ACCOUNT_URL: e.g. https://<account>.blob.core.windows.net —
+    #     used with Entra ID (DefaultAzureCredential: managed identity in Azure, `az
+    #     login` locally). Required for bare "<container>/<blob_name>" paths when no
+    #     connection string is set, and used as the account for output uploads.
     AZURE_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
+    AZURE_STORAGE_ACCOUNT_URL: str = os.getenv("AZURE_STORAGE_ACCOUNT_URL", "")
+    # Fallback output container, used only when one can't be derived from the input
+    # blob's own container (see core.storage._derive_output_container).
     OUTPUT_CONTAINER: str = os.getenv("OUTPUT_CONTAINER", "outputs")
 
     # --- Local paths (used by the local storage backend / CLI) ---

@@ -84,8 +84,13 @@ def _extract_payload(text: str) -> dict:
 # GET /health — kept alongside the SDK's built-in GET /readiness for continuity with
 # existing health-probe configuration (e.g. Logic Apps / Container Apps).
 async def _health(_request: Request) -> JSONResponse:
-    return JSONResponse({"status": "ok"})
-
+    # return JSONResponse({"status": "ok"})
+    from core.settings import settings
+    return JSONResponse({
+        "status": "ok",
+        "storage_backend": settings.STORAGE_BACKEND,
+        "azure_storage_account_url_set": bool(settings.AZURE_STORAGE_ACCOUNT_URL)
+        })
 
 app.add_route("/health", _health, methods=["GET"])
 

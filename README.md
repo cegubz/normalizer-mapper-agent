@@ -92,7 +92,9 @@ Everything customer-specific is data, not code:
 }
 ```
 `input` may instead be `{ "content_base64": "...", "filename": "book.xlsx" }` so Logic
-Apps can post file bytes directly.
+Apps can post file bytes directly, or a plain string — `"input": "fmg-inbound/book.xlsx"`
+— as shorthand for `{ "path": "fmg-inbound/book.xlsx" }` (a bare blob path or full blob
+URL; see § "Passing Blob paths instead of inline bytes" below).
 
 **Response**:
 ```json
@@ -107,9 +109,13 @@ Apps can post file bytes directly.
     "row_counts": { "NEO": 9296, "LAO": 22893, "Normalized": 1403 },
     "warnings": [], "llm_used": true
   },
-  "outputs": { "NEO": "<path|blob url>", "LAO": "...", "Normalized": "..." }
+  "outputs": { "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "..." }
 }
 ```
+With `STORAGE_BACKEND=azure_blob`, each `outputs` value is a bare `"<container>/<blob_name>"`
+path (e.g. `"fmg-outbound/a2c969e26557/NEO.csv"`) — same shorthand form accepted for
+`input`/`reference_files` — resolved against the same storage account as the request
+(`AZURE_STORAGE_CONNECTION_STRING` / `AZURE_STORAGE_ACCOUNT_URL`), not a full URL.
 
 ## 5. Calling it from Azure Logic Apps
 
@@ -129,19 +135,20 @@ the same core from a Container App, Durable Function, or queue trigger without c
 
 ### Passing Blob paths instead of inline bytes
 
-Set `STORAGE_BACKEND=azure_blob` (+ `AZURE_STORAGE_CONNECTION_STRING`, `OUTPUT_CONTAINER`)
-and `"path"` in `input`/`reference_files` can be an actual Blob location instead of
-`content_base64` — `core/storage.AzureBlobStorage` downloads it before processing and
-uploads NEO/LAO/Normalized back to Blob, returning their URLs in `outputs`. Three shapes
-are accepted, in order of how directly they name a blob:
+Set `STORAGE_BACKEND=azure_blob` and one of `AZURE_STORAGE_CONNECTION_STRING` /
+`AZURE_STORAGE_ACCOUNT_URL` (see below), and `"path"` in `input`/`reference_files` can be
+an actual Blob location instead of `content_base64` — `core/storage.AzureBlobStorage`
+downloads it before processing and uploads NEO/LAO/Normalized back to Blob, returning
+each as a bare `"<container>/<blob_name>"` path in `outputs`. Three shapes are accepted
+for the *input* path, in order of how directly they name a blob:
 
 1. A full blob URL with a SAS token already embedded — used as-is, no extra auth (what
    most Logic Apps blob connector / "Create SAS URI" actions hand you).
 2. A full blob URL with no SAS — authenticated via `AZURE_STORAGE_CONNECTION_STRING` if
    set, else via Entra ID (`DefaultAzureCredential`: managed identity in Azure, `az
-   login` locally).
-3. A bare `"<container>/<blob_name>"` path — always resolved via
-   `AZURE_STORAGE_CONNECTION_STRING`.
+   login` locally) against that URL's own account.
+3. A bare `"<container>/<blob_name>"` path — resolved via `AZURE_STORAGE_CONNECTION_STRING`
+   if set, else via Entra ID against `AZURE_STORAGE_ACCOUNT_URL`.
 
 ```json
 { "customer_id": "default", "reference_files": [
@@ -151,6 +158,18 @@ are accepted, in order of how directly they name a blob:
 
 `content_base64` still works unchanged for either backend — the shapes aren't mutually
 exclusive per request.
+
+**Auth:** set exactly one of:
+- `AZURE_STORAGE_CONNECTION_STRING` — account-key connection string.
+- `AZURE_STORAGE_ACCOUNT_URL` — e.g. `https://<account>.blob.core.windows.net`, used
+  with Entra ID (`DefaultAzureCredential`). Required for bare `"<container>/<blob_name>"`
+  paths and for uploading outputs when no connection string is set.
+
+**Output container:** outputs are written to the storage account above, in a container
+derived from the *input* blob's own container — `inbound` is swapped for `outbound`
+(e.g. an input from `fmg-inbound` writes outputs to `fmg-outbound`). `OUTPUT_CONTAINER`
+is only the fallback used when the input container doesn't follow that naming (or the
+input arrived as `content_base64`, which names no container).
 
 ## 5b. Deploying to Microsoft Foundry (Hosted Agents)
 

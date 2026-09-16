@@ -100,7 +100,8 @@ both NEO and LAO, plus the join-key bonus) — use whichever shape matches how y
 upstream system actually delivers files: two separate triggers/calls (one per file, as
 they land), or one call once both have landed.
 
-Each entry accepts the same two shapes as `"input"` today:
+Each entry accepts the same shapes as `"input"` today:
+- `"container/blob.csv"` or a full blob URL — plain-string shorthand for `{ "path": "..." }`.
 - `{ "path": "..." }` — a path/URL the configured storage backend can fetch. With
   `STORAGE_BACKEND=azure_blob` this can be a real Blob URL (SAS-signed, or bare —
   see README.md § "Passing Blob paths instead of inline bytes" for the three

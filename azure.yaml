@@ -20,6 +20,8 @@ services:
             - aif-schemaupd-dev-aue-proj
         env:
             AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+            AZURE_STORAGE_ACCOUNT_URL : https://stschemaupddevaue001.blob.core.windows.net/
+            STORAGE_BACKEND : azure_blob
         codeConfiguration:
             dependencyResolution: remote_build
             entryPoint: foundry_app.py
