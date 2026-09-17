@@ -64,6 +64,8 @@ class Settings:
     # Master switch — when false, the agent runs the deterministic path only.
     USE_LLM: bool = os.getenv("USE_LLM", "true").lower() == "true"
 
+    DEBUG_PROMPT: bool = os.getenv('DEBUG_PROMPT',"false").lower()=="true"
+
     @property
     def resolved_provider(self) -> str:
         """The provider actually used, auto-selected by key availability.
@@ -140,11 +142,17 @@ PROMPTS_DIR = PROMPT_PATH.parent
 # Filename substring -> dedicated prompt variant (see prompts/README.md). Matched
 # case-insensitively against the workbook's basename. Anything that doesn't match
 # (including files intentionally left off this list) falls back to the main prompt.
+# _PROMPT_VARIANTS_BY_FILENAME = {
+#     "cb mm ltp": "cb_mm_ltp_august",
+#     "rio tinto": "rio_tinto",
+#     "billiton": "westrac",
+#     "combination of all files": "westrac",
+# }
 _PROMPT_VARIANTS_BY_FILENAME = {
-    "cb mm ltp": "cb_mm_ltp_august",
+    "cb mm ltp": "fmg",
     "rio tinto": "rio_tinto",
-    "billiton": "westrac",
-    "combination of all files": "westrac",
+    "billiton": "bhp",
+    "combination of all files": "bhp",
 }
 
 

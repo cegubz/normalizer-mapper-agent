@@ -9,6 +9,7 @@ runs the deterministic path only — so it is always callable/testable.
 """
 from __future__ import annotations
 import json
+import sys
 from .settings import settings, load_prompt
 
 # JSON schema for the structured mapping decision we ask the model to return.
@@ -141,6 +142,15 @@ def refine_mapping(
     is_anthropic = settings.resolved_provider == "anthropic"
     model = model or (settings.ANTHROPIC_MODEL if is_anthropic else settings.OPENAI_MODEL)
     system_prompt = load_prompt(prompt_variant)
+
+    if settings.DEBUG_PROMPT:
+        print(
+            f"\n{'='*80}\n[DEBUG_PROMPT] target={target!r} "
+            f"prompt_variant={prompt_variant or 'main'!r} "
+            f"({len(system_prompt)} chars)\n{'='*80}\n"
+            f"{system_prompt}\n{'='*80}\n",
+            file=sys.stderr,
+        )
 
     user_payload = {
         "target": target,

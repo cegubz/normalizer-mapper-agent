@@ -132,7 +132,8 @@ def run_agent(request: dict) -> dict:
                 out_inline[target] = base64.b64encode(df.to_csv(index=False).encode()).decode()
 
         norm = result["normalized"]
-        loc = storage.write_csv(norm, "Normalized.csv", run_id)
+        # loc = storage.write_csv(norm, "Normalized.csv", run_id)
+        loc = storage.write_csv(norm, "Exceptions.csv", run_id)
         out_locations["Normalized"] = loc
         if request.get("return_inline"):
             out_inline["Normalized"] = base64.b64encode(norm.to_csv(index=False).encode()).decode()
