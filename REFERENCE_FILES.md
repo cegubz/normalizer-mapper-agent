@@ -150,6 +150,22 @@ target is simply absent from `outputs`, not an empty/broken CSV. All 1,403 quara
 rows come from the LTP side; `Measurement-Points.csv` alone quarantines none, which is
 why its `Normalized` count is 0 instead of 1,403 in that column.
 
+The `LAO_mean`/`NEO_mean` values above predate `SerialNumber`/`ComponentCode`/
+`ModifierCode` becoming `customer_file`-mappable fields (see `prompts/README.md`'s "AMT
+cross-reference enrichment" section) — they've since moved for the same reason
+documented there (a field that's genuinely absent from this workbook shape correctly
+pulls the mean down once it starts being measured, rather than staying hidden as a
+permanent `enrichment` placeholder). This table's point — that the reference-files and
+workbook workflows produce identical mappings for the same underlying data — still
+holds; only the absolute confidence numbers are stale. Also note: this workflow detects
+`prompt_variant` (and therefore which `appendix.*.md`/cross-reference table applies)
+from the posted file's own basename, so a generically-named `LTP.csv` won't match the
+`"cb mm ltp"` filename needle `CB MM LTP AUGUST.xlsx` does — the AMT cross-reference
+fill for `ComponentCode`/`ModifierCode`/`SerialNumber` only fires when the filename
+itself carries a recognizable customer/workbook-shape hint (see
+`core/settings._PROMPT_VARIANTS_BY_FILENAME`), independent of this workflow vs. the
+workbook one.
+
 The small remaining `NEO_mean` gap is expected, not a bug: a workbook cell holds a
 native Excel date, while the same date in a CSV is plain text re-parsed by
 `dateutil` — slightly less certain evidence for the scorer, not a mapping error.

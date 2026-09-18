@@ -22,10 +22,24 @@ Response contract:
   "run_id": "...",
   "customer_id": "...",
   "mapping_report": { ... },                # confidence per column, row counts, warnings
-  "outputs": { "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "..." },
+  "outputs": { "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "...",
+               "NEO_Exceptions": "...", "LAO_Exceptions": "..." },
   "outputs_inline": { ... base64 ... }      # only when return_inline=true
   "error": "..."                            # only on failure
 }
+
+"NEO_Exceptions"/"LAO_Exceptions" (only present for a target that was actually built)
+are a companion, post-build audit — see core/exceptions.py — of rows already present in
+NEO.csv/LAO.csv that are still missing a critical field (AssetName/SerialNumber/
+ComponentCode/ModifierCode by default) or hold gibberish in one. They are a read-only
+review view, not a quarantine: flagged rows are NOT removed from NEO.csv/LAO.csv.
+
+Every row of every one of those four CSVs (NEO/LAO and their _Exceptions companions)
+also carries a trailing "ConfidenceScore" column — a PER-ROW score, distinct from the
+per-column numbers in mapping_report.mappings/column_confidence_summary. See
+core/row_confidence.py. Its means per file are reported in
+mapping_report.column_confidence_summary as "{target}_row_confidence_mean" and
+"{target}_Exceptions_row_confidence_mean".
 """
 from __future__ import annotations
 import uuid
@@ -130,6 +144,17 @@ def run_agent(request: dict) -> dict:
             out_locations[target] = loc
             if request.get("return_inline"):
                 out_inline[target] = base64.b64encode(df.to_csv(index=False).encode()).decode()
+
+        # Post-build exception audit (core/exceptions.py): a companion review file per
+        # target, alongside NEO.csv/LAO.csv — rows still missing a critical field or
+        # holding gibberish after mapping + cross-reference enrichment. Not a quarantine:
+        # those rows stay in NEO.csv/LAO.csv exactly as built.
+        for target, exc_df in result.get("exceptions", {}).items():
+            key = f"{target}_Exceptions"
+            loc = storage.write_csv(exc_df, f"{target}_Exceptions.csv", run_id)
+            out_locations[key] = loc
+            if request.get("return_inline"):
+                out_inline[key] = base64.b64encode(exc_df.to_csv(index=False).encode()).decode()
 
         norm = result["normalized"]
         # loc = storage.write_csv(norm, "Normalized.csv", run_id)

@@ -8,7 +8,16 @@ customer is onboarded by adding one config file — no code change).
 
 It does not introduce any new workflow. Enrichment fields (the AMT / Cross-Reference /
 IK17 join columns, i.e. the `_y` columns in `NEO.py` / `LAO.py`) are left **blank and
-labelled `requires_enrichment`** — never invented. No Snowflake logic is included.
+labelled `requires_enrichment`** — never invented — with one deliberate exception:
+`ComponentCode`, `ModifierCode`, and (on `LAO`) `AssetName` — the equipment-number +
+component-code + modifier-code triple a downstream Snowflake key is built from — are
+now populated where the data genuinely supports it, from two real sources only: the
+customer file itself (when a workbook shape carries these columns directly) and a
+deterministic join against the AMT lookup tables in `prompts/cross-references/*.csv`
+(never the LLM, never a guess). See `prompts/README.md` § "AMT cross-reference
+enrichment" for exactly how, and `core/cross_reference.py` for the per-workbook-shape
+join logic. No other Snowflake logic is included, and every other enrichment field
+stays blank exactly as before.
 
 ---
 
@@ -24,9 +33,15 @@ customer .xlsx
 [4] LLM refine         ← OpenAI reviews/repairs ambiguous columns + writes notes
 [5] normalize rows     ← keyless / identity-missing / banner / gibberish → Normalized.csv
 [6] build outputs      ← NEO.csv + LAO.csv (constants + transforms; enrichment blank)
+[7] AMT cross-reference ← fills SerialNumber/ComponentCode/ModifierCode blanks where the
+                          customer file itself doesn't carry them (core/cross_reference.py)
+[8] row confidence     ← per-row ConfidenceScore column, appended to every NEO/LAO row
+                          (core/row_confidence.py) — distinct from the per-column numbers
+[9] exception audit    ← flags rows still missing a critical field, or gibberish, in the
+                          FINAL NEO/LAO rows → NEO_Exceptions.csv / LAO_Exceptions.csv
       │
       ▼
-mapping_report (JSON, confidence per column) + 3 CSVs
+mapping_report (JSON, confidence per column AND per row) + 5 CSVs
 ```
 
 The scoring rubric and the prompt are the ones created earlier in this project and live
@@ -53,7 +68,10 @@ fmg_agent/
 │   ├─ normalizer.py          # row quarantine (Normalized.csv)
 │   ├─ transforms.py          # named transforms (only NEO.py/LAO.py logic)
 │   ├─ builders.py            # build NEO/LAO frames from the resolved mapping
-│   └─ mapping_engine.py      # orchestrates the 6 steps above
+│   ├─ cross_reference.py     # AMT lookup enrichment (SerialNumber/ComponentCode/ModifierCode)
+│   ├─ exceptions.py          # post-build audit (NEO_Exceptions.csv / LAO_Exceptions.csv)
+│   ├─ row_confidence.py      # per-row ConfidenceScore column (§11)
+│   └─ mapping_engine.py      # orchestrates the steps above
 ├─ tests/test_smoke.py
 ├─ requirements.txt
 ├─ host.json                  # Azure Functions host config
@@ -72,6 +90,7 @@ Everything customer-specific is data, not code:
 | Constants (RegistrationCounter, UOM…) | `constants{}` | ✅ |
 | Scoring weights / bands / name gate | `scoring{}` | ✅ |
 | Reject rules for normalization | `normalization.reject_rules[]` | ✅ |
+| Which fields trip a post-build exception | `exceptions.critical_fields[]` / `exceptions.gibberish_fields[]` | ✅ |
 | Add a brand-new customer | copy `_TEMPLATE.json` → `<id>.json` | ✅ |
 | Per-call sheet override | `sheet_config_override` in the request body | ✅ |
 | Storage target (local ↔ Azure Blob) | `STORAGE_BACKEND` env var | ✅ |
@@ -105,13 +124,29 @@ URL; see § "Passing Blob paths instead of inline bytes" below).
   "mapping_report": {
     "matched_sheets": [...],
     "mappings": { "NEO": [ {"canonical_field","source_column","confidence","band","status","notes"} ], "LAO": [...] },
-    "column_confidence_summary": { "NEO_mean": 0.813, "LAO_mean": 0.99 },
-    "row_counts": { "NEO": 9296, "LAO": 22893, "Normalized": 1403 },
+    "column_confidence_summary": {
+      "NEO_mean": 0.813, "LAO_mean": 0.99,
+      "NEO_row_confidence_mean": 0.736, "LAO_row_confidence_mean": 0.398,
+      "NEO_Exceptions_row_confidence_mean": null, "LAO_Exceptions_row_confidence_mean": 0.346
+    },
+    "row_counts": { "NEO": 9296, "LAO": 22893, "Normalized": 1403, "NEO_Exceptions": 0, "LAO_Exceptions": 0 },
+    "exceptions_by_reason": { "NEO": {"missing ComponentCode": 12} },
     "warnings": [], "llm_used": true
   },
-  "outputs": { "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "..." }
+  "outputs": {
+    "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "...",
+    "NEO_Exceptions": "...", "LAO_Exceptions": "..."
+  }
 }
 ```
+`NEO_Exceptions`/`LAO_Exceptions` are a **post-build audit**, not a quarantine: rows
+already written into `NEO.csv`/`LAO.csv` that are still missing a critical field
+(`AssetName`/`SerialNumber`/`ComponentCode`/`ModifierCode` by default — configurable via
+`exceptions.critical_fields`/`exceptions.gibberish_fields` in the customer JSON) after
+mapping *and* AMT cross-reference enrichment have both run. Flagged rows are copied into
+the companion file with an added `_exception_reason` column — they are **not** removed
+from `NEO.csv`/`LAO.csv`. `exceptions_by_reason` only appears per target when that
+target actually has at least one flagged row. See `core/exceptions.py`.
 With `STORAGE_BACKEND=azure_blob`, each `outputs` value is a bare `"<container>/<blob_name>"`
 path (e.g. `"fmg-outbound/a2c969e26557/NEO.csv"`) — same shorthand form accepted for
 `input`/`reference_files` — resolved against the same storage account as the request
@@ -280,7 +315,12 @@ USE_LLM=false python tests/test_smoke.py CB_MM_LTP_AUGUST.xlsx
 
 Verified run on `CB_MM_LTP_AUGUST.xlsx`: **NEO 9,296 rows · LAO 22,893 rows ·
 Normalized 1,403 rows**; NEO/LAO headers match `FMG_NEO_Aug_26.csv` / `FMG_LAO_Aug_26.csv`
-exactly; customer-file confidence means **NEO 0.813 / LAO 0.99**.
+exactly; customer-file confidence means **NEO 0.704 / LAO 0.558** (deterministic-only;
+was 0.813/0.99 before `ComponentCode`/`ModifierCode`/LAO `AssetName` joined the
+deliverable mean — this workbook genuinely lacks those three columns, so the honest mean
+dropped; see `prompts/README.md` § "AMT cross-reference enrichment"). The AMT
+cross-reference join still recovers `ComponentCode`/`ModifierCode` for 2,637/9,296 NEO
+rows from `fmg_cross-reference.csv` despite the customer file not carrying them at all.
 
 **Additional workflow — standalone reference CSVs instead of one workbook** (an LTP
 export and a Measurement-Points export delivered as their own files, e.g. from Blob
@@ -300,7 +340,63 @@ python run_local.py --reference-files ./test-data/LTP.csv ./test-data/Measuremen
 
 ## 9. Deliberate non-goals
 
-- **No new workflows** beyond normalization + schema mapping.
-- **No invented columns/values** — enrichment stays blank and labelled.
-- **No Snowflake / warehouse** — file (or blob) output only; enrichment + load happen in
-  your later integration step.
+- **No new workflows** beyond normalization + schema mapping (the post-build exception
+  audit in § below is a review/reporting step on the same outputs, not a new workflow —
+  it never changes what's written to `NEO.csv`/`LAO.csv`).
+- **No invented columns/values** — enrichment stays blank and labelled, except the AMT
+  key fields (`SerialNumber`/`ComponentCode`/`ModifierCode`/LAO `AssetName`), which are
+  populated only from the customer file itself or a deterministic AMT cross-reference
+  join — never guessed, never LLM-sourced. See § 1 above and `prompts/README.md`.
+- **No Snowflake / warehouse** — file (or blob) output only; the AMT join above produces
+  the key fields Snowflake needs, but loading/writing to Snowflake itself is still your
+  later integration step.
+- **No row removal in the exception audit** — `NEO_Exceptions.csv`/`LAO_Exceptions.csv`
+  are a copy-out review view of rows already in `NEO.csv`/`LAO.csv`; flagging a row for
+  missing/gibberish data never removes it from the main output.
+
+## 10. Post-build exception audit (NEO_Exceptions.csv / LAO_Exceptions.csv)
+
+Separate from row normalization (§1 step 5, which decides if a *source* row is
+admissible at all, before NEO/LAO exist) — this runs on the **final, already-built**
+NEO/LAO rows, after AMT cross-reference enrichment, and flags any row still missing a
+critical field or holding gibberish in one. Default critical fields: `AssetName`,
+`SerialNumber`, `ComponentCode`, `ModifierCode` — the same identity + AMT-key fields the
+downstream Snowflake key is built from (§1). Configurable per customer via
+`exceptions.critical_fields`/`exceptions.gibberish_fields` in `config/customers/*.json`.
+
+Flagged rows are written to a companion file, **alongside** the main output, with an
+added `_exception_reason` column — they are copied out for review, not removed from
+`NEO.csv`/`LAO.csv`. A workbook shape that genuinely lacks a critical field for every
+row (e.g. `CB MM LTP AUGUST` has no serial number anywhere — see `prompts/README.md`)
+will correctly show up as 100% flagged: that's an honest reflection of a real, permanent
+data gap for that shape, not a bug in the audit.
+
+See `core/exceptions.py` for the implementation and why the critical-field list is kept
+deliberately short (most other fields are legitimately blank sometimes by this
+project's own design — flagging every blank cell would bury the real exceptions).
+
+## 11. Per-row confidence score (`ConfidenceScore` column)
+
+Every row of `NEO.csv`, `LAO.csv`, and their `_Exceptions` companions carries a trailing
+`ConfidenceScore` column — a **different metric** from everything else in
+`mapping_report`. The existing `mappings[<target>][*].confidence` and
+`column_confidence_summary`'s `NEO_mean`/`LAO_mean` are per-**column** numbers ("how sure
+are we this source column is the right one for this canonical field?") — the same value
+for every row that uses that column. `ConfidenceScore` is per-**row**: for one specific
+built row, how much of what's actually printed in it rests on solid evidence? A column
+mapped at 0.95 confidence can still have a genuinely blank cell on some individual rows
+(that row's own source cell was empty) — that row gets no credit for a field it doesn't
+actually have data for.
+
+Only fields the pipeline actually attempts for a given customer shape count toward it:
+a `customer_file` field's own column-mapping confidence; `constant`/`derived` fields at
+a flat 1.0 (not a guess); an `enrichment` field only once the AMT cross-reference pass
+actually fills it for at least one row of that shape (at 0.95 — an exact deterministic
+join, more reliable than a rejected column-alias guess), so it then varies genuinely
+row-to-row. A field this pipeline has **no** mechanism to ever fill for this customer
+(e.g. `BranchCode`/`SiteCode` — blank for every customer by this project's original
+design) is excluded from the score entirely, not zeroed — it's out of scope by design,
+not a reflection of any one row's quality, so it shouldn't drag every single row down by
+the same fixed amount. See `core/row_confidence.py` for the full reasoning and
+`mapping_report.column_confidence_summary`'s `{target}_row_confidence_mean` /
+`{target}_Exceptions_row_confidence_mean` for the per-file means (§4).

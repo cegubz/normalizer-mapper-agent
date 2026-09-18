@@ -2,7 +2,8 @@
 
 Order (unchanged from the project):
   detect sheets -> profile columns -> deterministic score -> LLM refine (optional)
-  -> normalize/quarantine rows -> build NEO/LAO -> assemble mapping_report.
+  -> normalize/quarantine rows -> build NEO/LAO -> AMT cross-reference enrichment
+  -> post-build exception audit (core/exceptions.py) -> assemble mapping_report.
 
 Two entrypoints share that same order via _assemble_outputs(): run_mapping() resolves
 frames from a multi-sheet workbook (sheet name -> role); run_mapping_from_reference_files()
@@ -14,7 +15,9 @@ from __future__ import annotations
 import os
 import pandas as pd
 
-from . import profiling, scorer, builders, normalizer
+from . import profiling, scorer, builders, normalizer, cross_reference
+from . import exceptions as exceptions_mod
+from . import row_confidence
 from .llm_mapper import refine_mapping
 from .settings import settings, detect_prompt_variant
 
@@ -216,6 +219,7 @@ def _assemble_outputs(
     }
 
     outputs = {}          # target -> DataFrame
+    exceptions = {}       # target -> DataFrame (core/exceptions.py, post-build audit)
     rejected_frames = []  # Normalized rows across sheets
 
     for target, tcfg in cfg["targets"].items():
@@ -274,6 +278,20 @@ def _assemble_outputs(
                 elif llm_d:
                     note = llm_d.get("notes", "")
 
+                if band == "reject" and src:
+                    # "reject" means the winning column was still the best of a bad lot
+                    # (the greedy scorer always assigns *something* if any column is
+                    # unclaimed, with no confidence floor) — not a genuine candidate. A
+                    # bare column name like "Measuring point" ending up as ComponentCode
+                    # at 0.38 confidence is exactly the silently-wrong output this
+                    # project's prompts explicitly rule out (see prompts/README.md); an
+                    # honest blank is required here instead of writing it through.
+                    note = (note + " | " if note else "") + (
+                        f"Rejected low-confidence pick '{src}' ({conf:.2f} < low_review) "
+                        f"— left blank rather than writing a non-candidate column."
+                    )
+                    src = None
+
                 resolved[can] = src
                 rows.append({
                     "canonical_field": can, "source_column": src, "source_class": sc,
@@ -293,6 +311,25 @@ def _assemble_outputs(
                              "confidence": 0.0, "band": None, "status": "requires_enrichment",
                              "notes": f"join={f.get('join')}"})
         report["mappings"][target] = rows
+
+        # Per-field "trust" for the row-level ConfidenceScore column (core/row_confidence.py)
+        # — a different metric from the column-level numbers above. customer_file fields
+        # use their own computed column-mapping confidence (even a low/rejected one — the
+        # model did attempt it); constant/derived fields are trusted at 1.0 (not a guess).
+        # Plain "enrichment" fields (BranchCode/SiteCode/...) are deliberately left OUT of
+        # this dict for now — this customer shape's cross-reference pass may have no
+        # mechanism to ever fill them, and a field the pipeline never attempts shouldn't
+        # count against every row by the same fixed amount. See core/row_confidence.py's
+        # module docstring. The AMT cross-reference block below adds one back in, at a
+        # high trust, the moment it's actually filled for at least one row of this shape.
+        field_confidence = {
+            r["canonical_field"]: (r["confidence"] or 0.0)
+            for r in rows
+            if r["source_class"] == "customer_file"
+        }
+        field_confidence.update({
+            r["canonical_field"]: 1.0 for r in rows if r["source_class"] in ("constant", "derived")
+        })
 
         # The summary mean is scoped to fields actually written to <target>.csv
         # (output_columns) — not every customer_file field. Some customer_file fields
@@ -326,11 +363,64 @@ def _assemble_outputs(
             rejected_frames.append(rejected)
 
         outputs[target] = builders.build_target(clean, tcfg, resolved, cfg["constants"])
+
+        # AMT cross-reference enrichment (equipment number / component code / modifier
+        # code key for downstream Snowflake population) — fills blanks only, never
+        # overwrites a customer_file-derived value. See core/cross_reference.py for the
+        # per-workbook-shape join keys and what each has been verified against.
+        filled = cross_reference.enrich(target, prompt_variant, outputs[target], clean, resolved)
+        if filled:
+            rows_by_field = {r["canonical_field"]: r for r in report["mappings"][target]}
+            for canonical, count in filled.items():
+                if not count:
+                    continue
+                row = rows_by_field.get(canonical)
+                note = f"AMT cross-reference: filled {count} row(s) still blank after customer_file mapping."
+                if row is not None:
+                    row["notes"] = (row["notes"] + " | " + note).strip(" |") if row.get("notes") else note
+                    row["status"] = f"{row['status']}+cross_reference" if row.get("status") else "cross_reference"
+                # A join match is a deterministic exact-key lookup, not the fuzzy
+                # column-alias guess customer_file confidence measures — e.g. FMG's
+                # ComponentCode has no source column at all (rejected, near-0 confidence)
+                # yet the AMT join fills it reliably. Trust wherever this field was
+                # actually filled this way at least as much as any genuine customer_file
+                # pick for it (see core/row_confidence.py's module docstring).
+                field_confidence[canonical] = max(field_confidence.get(canonical, 0.0), 0.95)
+
+        # Per-row confidence score (core/row_confidence.py) — appended as an EXTRA
+        # trailing column, not part of the fixed output_columns schema. Computed here,
+        # after cross-reference enrichment, so a cell the enrichment pass just filled
+        # counts as present for this row; exceptions[target] below is a row-subset of
+        # this same frame, so it inherits the column automatically, no separate
+        # computation needed there.
+        outputs[target]["ConfidenceScore"] = row_confidence.compute(
+            outputs[target], tcfg.get("output_columns", []), field_confidence
+        )
+        report["column_confidence_summary"][f"{target}_row_confidence_mean"] = (
+            round(float(outputs[target]["ConfidenceScore"].mean()), 3)
+            if len(outputs[target]) else None
+        )
+
         report["row_counts"][target] = int(len(outputs[target]))
+
+        # Post-build exception audit (core/exceptions.py) — runs on the FINAL rows,
+        # after cross-reference enrichment above, so a cell it just filled is never
+        # wrongly flagged as missing. Flagged rows stay in outputs[target] untouched;
+        # this is a companion review file, not a quarantine.
+        exceptions[target] = exceptions_mod.find_exceptions(outputs[target], cfg.get("exceptions", {}))
+        report["row_counts"][f"{target}_Exceptions"] = int(len(exceptions[target]))
+        report["column_confidence_summary"][f"{target}_Exceptions_row_confidence_mean"] = (
+            round(float(exceptions[target]["ConfidenceScore"].mean()), 3)
+            if len(exceptions[target]) else None
+        )
+        if len(exceptions[target]):
+            report.setdefault("exceptions_by_reason", {})[target] = (
+                exceptions[target]["_exception_reason"].value_counts().to_dict()
+            )
 
     normalized = (
         pd.concat(rejected_frames, ignore_index=True) if rejected_frames else pd.DataFrame()
     )
     report["row_counts"]["Normalized"] = int(len(normalized))
 
-    return {"report": report, "outputs": outputs, "normalized": normalized}
+    return {"report": report, "outputs": outputs, "normalized": normalized, "exceptions": exceptions}

@@ -67,7 +67,16 @@ def score_target(
     for fi, f in enumerate(mappable):
         dtype = f.get("dtype", "str")
         aliases = f.get("aliases", [])
+        # A header containing any of these substrings is disqualified outright for this
+        # field, regardless of score — for a lookalike-but-wrong column (e.g. "Serial
+        # Prefix" for SerialNumber: a model-family code, not a per-unit serial) partial
+        # token overlap with the real aliases can still clear the confidence bands, and
+        # unlike a genuine low-confidence gap, writing it through would be actively
+        # wrong, not just incomplete.
+        excludes = [e.lower() for e in f.get("exclude_headers", [])]
         for prof in column_profiles:
+            if excludes and any(e in str(prof["column"]).lower() for e in excludes):
+                continue
             ns = name_score(prof["column"], aliases)
             vs = prof["evidence"].get(dtype, 0.5)
             conf = nw * ns + vw * vs

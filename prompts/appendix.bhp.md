@@ -18,6 +18,13 @@ ST Description, Strategy Usage, Customer, Task Type, plus several match/upload/d
 utility columns (BULK, UPLOAD DATE, AMT Date, MATCH B/C/D to PARTS/COMPONENTS, RLEP,
 Variance).
 
+NOTE — this documented column list was carried over from before this project had a
+real Billiton-shaped workbook to test against (none exists in test-data/; the one
+Westrac-family file present, "01. MAIN - FORECAST...", is deliberately excluded, see
+below). "Component Code" / "Modifier Code" being literal columns here (like Rio
+Tinto's Comp Grid) is the working assumption, not independently re-verified. If this
+run's real `columns`/`samples` disagree with anything below, trust the real data.
+
 Fields verified against Billiton:
   - ModelCode: Model — values like "785C", "793F".
   - AssetName: Equipment — values like "DT3168 - APX01529" (unit ID + serial pair);
@@ -37,3 +44,19 @@ Fields verified against Billiton:
     Date. "UPLOAD DATE" is a batch-upload timestamp (values cluster on month-end
     dates), not a planned-start date — do not pick it just because it is date-shaped.
     Treat this as a real gap unless this run's data shows otherwise.
+  - ComponentCode / ModifierCode: map "Component Code" / "Modifier Code" directly if
+    this run's real columns confirm they exist (see the NOTE above — unverified for
+    this shape specifically). If they genuinely aren't present, return `source_column:
+    null` rather than guessing — a code-in-code AMT cross-reference fallback
+    (core/cross_reference.py's bhp_neo, Model + "Primary Part Number"/"BHP Part No."
+    looked up against bhp_cross-reference.csv) fills blanks afterward from the lookup
+    table, but — unlike the FMG and Rio Tinto join keys, which were verified against
+    real workbook data — this one is best-effort against the cross-reference file's own
+    structure only, since no real Billiton workbook exists in test-data/ to confirm the
+    join key format or the "AMT" compound-string parse against.
+  - SerialNumber: map "Serial Number" directly if this run's real columns confirm it
+    exists (same unverified-for-this-shape caveat as above). bhp_cross-reference.csv has
+    no serial-number column of its own, so unlike ComponentCode/ModifierCode there is no
+    code-level fallback for this field here — if "Serial Number" genuinely isn't
+    present, return `source_column: null`; it stays a genuine gap, not something the
+    AMT cross-reference pass can recover.

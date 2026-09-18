@@ -31,9 +31,36 @@ and what was verified to be true of them:
   - FunctionalLoc: Function Location (Q) — hyphenated hierarchical FLOC strings
     (e.g. "CLB-MP-SUPP-WC012-ENGINE"); this file has genuine Functional Location data,
     unlike some other customers' exports.
+  - ComponentCode / ModifierCode: this sheet genuinely has NO component-code or
+    modifier-code column of any kind — verified against the full column list (Type,
+    Program, Department, Vendor, Equipment, Task Name, Start, Finish, Duration, Period,
+    Work, Group (L), Group Counter, Maint Item, Component Due Date, Strategy, Function
+    Location, Annual Estimate, Meas/TotCtrRdg, Counter reading). Return `source_column:
+    null` for both, honestly — do not be tempted by "Group (L)" or "Group Counter (M)"
+    just because they're short codes near component-shaped fields; they're grouping/
+    sequence IDs, not component codes. A separate AMT cross-reference join in code
+    (core/cross_reference.py, using Group (L) + the functional-location suffix as the
+    key — a mechanism this call has no visibility into and should not try to replicate)
+    fills ~43% of NEO rows afterward from a lookup table; the rest are genuine gaps in
+    that table, not something a better column pick here could recover.
+  - SerialNumber: this sheet genuinely has NO serial-number column, and the
+    cross-reference table used for ComponentCode/ModifierCode above has no full serial
+    number either — only a "Serial Prefix" (a model-family code like "RJG", not a
+    per-unit serial). This is a real, permanent gap for this workbook shape, on both
+    NEO and Measurement Points — return `source_column: null` rather than guessing at
+    any "Group"/ID-shaped column.
 
 The MEASUREMENT_POINTS role is the "Measurement Points" sheet: Measuring point,
 Functional Location, Description of measuring point, Meas/TotCountrRdg _, Counter
 reading, Annual estimate — a clean, already field-per-column layout; the deterministic
-scorer typically handles this sheet well on its own (LAO_mean ~0.99), so little to no
-override should be needed here.
+scorer typically handles this sheet well on its own for the fields it actually has.
+This sheet has no equipment-ID, component-code, modifier-code, or serial-number column
+at all — the equipment number is recovered afterward in code by parsing it out of the
+Functional Location string itself (the segment right after `<plant>-MP-<area>-`), and
+ComponentCode/ModifierCode are recovered for ~13% of rows (2,975 / 22,893 in the
+verified run) the same way, via a suffix-only, best-effort AMT cross-reference lookup —
+see core/cross_reference.py's fmg_lao — not by this call; return `source_column: null`
+for AssetName/ComponentCode/ModifierCode/SerialNumber here rather than guessing at
+Measuring point or Functional Location for them. SerialNumber specifically has no
+recovery path at all for this shape (see the NEO note above) — it stays null
+everywhere for FMG.

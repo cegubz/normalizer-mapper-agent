@@ -64,6 +64,21 @@
       "gibberish"
     ]
   },
+  "__comment_exceptions": "Post-build audit (core/exceptions.py), run on the FINAL NEO/LAO rows after mapping + cross-reference enrichment. Flagged rows are written to NEO_Exceptions.csv/LAO_Exceptions.csv for review — they stay in NEO.csv/LAO.csv unchanged, this is a companion view, not a quarantine. critical_fields/gibberish_fields apply to whichever of them exist in a given target's output_columns.",
+  "exceptions": {
+    "critical_fields": [
+      "AssetName",
+      "SerialNumber",
+      "ComponentCode",
+      "ModifierCode"
+    ],
+    "gibberish_fields": [
+      "AssetName",
+      "SerialNumber",
+      "ComponentCode",
+      "ModifierCode"
+    ]
+  },
   "targets": {
     "NEO": {
       "source_sheet_role": "LTP",
@@ -248,18 +263,36 @@
         },
         {
           "canonical": "SerialNumber",
-          "source_class": "enrichment",
-          "join": "Serial_Number"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "serial number",
+            "serial no",
+            "serial num"
+          ],
+          "__comment_exclude_headers": "A 'Serial Prefix'/'Serial Pfx' column is a model-family code shared by many units, not a per-unit serial — disqualify it outright rather than let partial token overlap ('serial') sneak it past the confidence bands (see core/scorer.py).",
+          "exclude_headers": [
+            "prefix",
+            "pfx"
+          ]
         },
         {
           "canonical": "ComponentCode",
-          "source_class": "enrichment",
-          "join": "Component_Code"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "component code",
+            "comp code"
+          ]
         },
         {
           "canonical": "ModifierCode",
-          "source_class": "enrichment",
-          "join": "Modifier_Code"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "modifier code",
+            "mod code"
+          ]
         },
         {
           "canonical": "TaskTypeCode",
@@ -452,23 +485,51 @@
         },
         {
           "canonical": "AssetName",
-          "source_class": "enrichment",
-          "join": "Equipment"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "eq id",
+            "equipment id",
+            "equipment",
+            "asset"
+          ]
         },
         {
           "canonical": "SerialNumber",
-          "source_class": "enrichment",
-          "join": "Serial_Number"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "serial number",
+            "serial no",
+            "serial num"
+          ],
+          "__comment_exclude_headers": "A 'Serial Prefix'/'Serial Pfx' column is a model-family code shared by many units, not a per-unit serial — disqualify it outright rather than let partial token overlap ('serial') sneak it past the confidence bands (see core/scorer.py).",
+          "exclude_headers": [
+            "prefix",
+            "pfx"
+          ]
         },
         {
           "canonical": "ComponentCode",
-          "source_class": "enrichment",
-          "join": "Component_Code"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "cc fl",
+            "component code",
+            "comp code",
+            "cc"
+          ]
         },
         {
           "canonical": "ModifierCode",
-          "source_class": "enrichment",
-          "join": "Modifier_Code"
+          "source_class": "customer_file",
+          "dtype": "str",
+          "aliases": [
+            "mc fl",
+            "modifier code",
+            "mod code",
+            "mc"
+          ]
         },
         {
           "canonical": "TaskTypeCode",

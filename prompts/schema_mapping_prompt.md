@@ -86,6 +86,38 @@ For each field in `customer_file_fields`:
      field that is not in `customer_file_fields`.
 
 ====================================================================
+SerialNumber / ComponentCode / ModifierCode (and, on LAO, AssetName) — the AMT key
+fields
+====================================================================
+These fields together form the serial-number + component-code + modifier-code key
+downstream systems (Snowflake) join on, so a wrong guess here is worse than for most
+other fields — it produces a key that silently points at the wrong asset/component, not
+just a blank cell.
+  - Some workbook shapes carry Serial Number / Component Code / Modifier Code as real,
+    literal columns (e.g. a sheet with columns actually named "Serial Number" /
+    "Component Code" / "Modifier Code", or short forms like "CC" / "MC" / "CC FL" /
+    "MC FL"). When more than one such column exists for the same field (e.g. both "CC"
+    and "CC FL"), prefer whichever is more completely populated in `samples`/`evidence`
+    — a "*FL" (functional-location-scoped) variant is often the one a customer's own
+    downstream process already treats as authoritative, and typically has fewer gaps
+    than a raw reading-log column of the same abbreviation.
+  - A "Serial Prefix" (or "Serial pfx") column is NOT SerialNumber — it is a short
+    model/family code shared by many different physical units (e.g. "RJG", "F520"), not
+    a per-unit serial. Only map SerialNumber to a column that actually holds a full,
+    per-unit serial value. If the only serial-shaped column present is a prefix/family
+    code, return `source_column: null` for SerialNumber rather than picking it — a
+    prefix silently written in as if it were the serial is worse than an honest gap,
+    since it would look plausible while identifying the wrong thing.
+  - Other workbook shapes (e.g. an LTP export with no component-code column at all, or a
+    reading-log sheet with no full serial number column at all) genuinely do not carry
+    these fields — that is not a mapping failure. Return `source_column: null` honestly.
+    A separate, deterministic AMT cross-reference join (outside this call, in code — see
+    core/cross_reference.py) fills genuine gaps like this from a lookup table
+    afterward; it only fills a cell this call leaves blank, so an honest null here is
+    not a dead end, and a guessed column here would actively block that correct
+    downstream fill by occupying the cell with wrong data first.
+
+====================================================================
 INPUT SHAPE (sent as the user message, JSON)
 ====================================================================
 {

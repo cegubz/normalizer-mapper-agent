@@ -31,6 +31,12 @@
     "reject_rules": ["missing_join_key", "missing_identity", "banner_row", "gibberish"]
   },
 
+  "__comment_exceptions": "Post-build audit (core/exceptions.py) on the FINAL NEO/LAO rows, after mapping + cross-reference enrichment. Flagged rows go to NEO_Exceptions.csv/LAO_Exceptions.csv for review; they stay in NEO.csv/LAO.csv unchanged. Keep this list short and load-bearing — every other field is legitimately blank sometimes by this project's design, and flagging those would bury real exceptions in noise.",
+  "exceptions": {
+    "critical_fields": ["AssetName", "SerialNumber", "ComponentCode", "ModifierCode"],
+    "gibberish_fields": ["AssetName", "SerialNumber", "ComponentCode", "ModifierCode"]
+  },
+
   "__comment_targets": "One block per output CSV. output_columns is the FIXED header/order. Each field declares source_class: customer_file (mapped by AI+scorer from a column in this workbook), enrichment (filled later by AMT/Xref/IK17 join — left blank, never invented), constant (from 'constants'), or derived (computed by a named transform in core/transforms.py).",
   "targets": {
     "NEO": { "source_sheet_role": "LTP", "identity_canonical": "AssetName", "output_columns": ["...copy from default.json..."], "fields": ["...copy & edit aliases per this customer..."] },
