@@ -114,11 +114,19 @@ def _value_evidence(series: pd.Series, dtype: str) -> float:
 
 
 def profile_columns(df: pd.DataFrame, sample_n: int = 8) -> list[dict]:
-    """Per-column profile: header, non-null ratio, dtype evidence, and value samples."""
+    """Per-column profile: header, non-null ratio, dtype evidence, and value samples.
+
+    Skips "Unnamed" (a blank Excel header pandas auto-names) and any "_"-prefixed
+    column — this project's own convention for an internal bookkeeping tag added
+    somewhere in the pipeline (e.g. run_mapping_from_multiple_workbooks' own
+    `_source_workbook`, or `_source_sheet`/`_reject_reason`/`_matched_keyword`/
+    `_exception_reason` elsewhere). Such a column is never a real candidate source for
+    a canonical field, so it shouldn't even be visible to the scorer/LLM as one.
+    """
     profiles = []
     n = max(1, len(df))
     for col in df.columns:
-        if str(col).startswith("Unnamed"):
+        if str(col).startswith("Unnamed") or str(col).startswith("_"):
             continue
         s = df[col]
         samples = (

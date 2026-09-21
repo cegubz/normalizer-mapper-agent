@@ -4,10 +4,14 @@ run_agent(request) is the single callable used by every surface (Azure Function,
 tests). It is transport-agnostic: give it a dict, get a dict back. Logic Apps calls the
 HTTP Function which is a thin wrapper around this.
 
-Request contract (all keys optional except input/reference_files — exactly one required):
+Request contract (all keys optional except input/workbooks/reference_files — exactly
+one of the three is required):
 {
   "customer_id": "default",                 # which config/customers/*.json to use
   "input":  "container/blob.csv" | { "path": "..."} | {"content_base64": "...", "filename": "x.xlsx"},
+  "workbooks": [                            # ALTERNATIVE to "input" — the TRUE/merge workflow, §14 of README.md.
+      "container/blob.xlsx" | { "path": "..." } | {"content_base64": "...", "filename": "site1.xlsx"}, ...
+  ],
   "reference_files": [                      # ALTERNATIVE to "input" — see REFERENCE_FILES.md.
       "container/blob.csv" | { "path": "..." } | {"content_base64": "...", "filename": "LTP.csv"}, ...
   ],
@@ -16,6 +20,17 @@ Request contract (all keys optional except input/reference_files — exactly one
   "return_inline": false                    # if true, include CSVs base64 in response
 }
 
+"workbooks" is the multi-workbook MERGE workflow (core/mapping_engine.
+run_mapping_from_multiple_workbooks): every posted file must be an Excel workbook (not
+a standalone CSV — use "reference_files" for that), each is resolved independently
+(its own sheet detection), and the SAME role's resolved rows are concatenated across
+ALL of them before the shared pipeline runs ONCE — producing a single NEO/LAO with more
+rows than any one workbook alone, not one run per file. This is genuinely different
+from "reference_files": that workflow treats each posted file as an independent source
+for a DIFFERENT target (one file feeds NEO, another feeds LAO); "workbooks" treats every
+posted file as another source feeding the SAME targets, unioned together. The original
+single-workbook "input" path is unchanged and still the default for a lone file.
+
 Response contract:
 {
   "status": "succeeded" | "failed",
@@ -23,20 +38,39 @@ Response contract:
   "customer_id": "...",
   "mapping_report": { ... },                # confidence per column, row counts, warnings
   "outputs": { "NEO": "<local path|container/blob>", "LAO": "...", "Normalized": "...",
-               "NEO_Exceptions": "...", "LAO_Exceptions": "..." },
+               "NEO_Exceptions": "...", "LAO_Exceptions": "...", "ExcludedComponents": "...",
+               "DuplicateDates": "..." },
   "outputs_inline": { ... base64 ... }      # only when return_inline=true
   "error": "..."                            # only on failure
 }
 
 "NEO_Exceptions"/"LAO_Exceptions" (only present for a target that was actually built)
-are a companion, post-build audit — see core/exceptions.py — of rows already present in
-NEO.csv/LAO.csv that are still missing a critical field (AssetName/SerialNumber/
-ComponentCode/ModifierCode by default) or hold gibberish in one. They are a read-only
-review view, not a quarantine: flagged rows are NOT removed from NEO.csv/LAO.csv.
+combine two severities — see core/exceptions.py — distinguished by a
+"_removed_from_output" column: rows still missing a critical field (AssetName/
+SerialNumber/ComponentCode/ModifierCode by default) or holding gibberish in one are
+flagged for review but left in NEO.csv/LAO.csv (`_removed_from_output=False`); rows
+where ComponentCode AND ModifierCode are BOTH blank carry no usable component identity
+at all and are actually removed (`_removed_from_output=True`).
 
-Every row of every one of those four CSVs (NEO/LAO and their _Exceptions companions)
-also carries a trailing "ConfidenceScore" column — a PER-ROW score, distinct from the
-per-column numbers in mapping_report.mappings/column_confidence_summary. See
+"ExcludedComponents" (one combined file across NEO+LAO, tagged by a "_source_target"
+column — always present, even if empty, once at least one target was built) holds rows
+REMOVED from NEO.csv/LAO.csv entirely by a business-rule keyword filter on
+StrategyTaskDescription (core/exclusions.py, customer-configurable via
+`exclusions.field`/`exclusions.keywords`) — a content decision, not a data-quality one.
+
+"DuplicateDates" (same one-combined-file-tagged-by-target convention) holds rows
+removed by the keep-latest-date deduplication (core/deduplication.py,
+`deduplication.<target>.group_by`/`date_field`): within a group of rows sharing the
+same group_by field values (the same task, planned on different dates), every row
+except the one with the latest date_field value is removed here.
+
+A row lands in at most one of NEO_Exceptions/LAO_Exceptions (removed case),
+ExcludedComponents, or DuplicateDates — never more than one; see mapping_engine.py's
+`_assemble_outputs` for the exact removal order.
+
+Every row of every one of NEO/LAO and all four companion files above also carries a
+trailing "ConfidenceScore" column — a PER-ROW score, distinct from the per-column
+numbers in mapping_report.mappings/column_confidence_summary. See
 core/row_confidence.py. Its means per file are reported in
 mapping_report.column_confidence_summary as "{target}_row_confidence_mean" and
 "{target}_Exceptions_row_confidence_mean".
@@ -49,7 +83,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from core.settings import load_customer_config
-from core.mapping_engine import run_mapping, run_mapping_from_reference_files
+from core.mapping_engine import (
+    run_mapping,
+    run_mapping_from_multiple_workbooks,
+    run_mapping_from_reference_files,
+)
 from core.storage import get_storage
 
 
@@ -111,7 +149,21 @@ def run_agent(request: dict) -> dict:
 
         storage = get_storage(request.get("output_dir"))
 
-        if request.get("reference_files"):
+        if request.get("workbooks"):
+            # The TRUE/merge workflow: several Excel workbooks combined into ONE NEO/LAO
+            # — see core/mapping_engine.run_mapping_from_multiple_workbooks + README.md §14.
+            refs = [_normalize_ref(ref) for ref in request["workbooks"]]
+            for ref in refs:
+                file_type = _resolve_file_type(ref, request.get("fileType"))
+                if file_type != "excel":
+                    raise ValueError(
+                        f"'workbooks' requires every posted file to be an Excel workbook "
+                        f"(got {ref!r}, resolved as {file_type!r}) — use 'reference_files' "
+                        "for standalone CSVs instead."
+                    )
+            input_paths = [storage.fetch_input(ref) for ref in refs]
+            result = run_mapping_from_multiple_workbooks(input_paths, cfg)
+        elif request.get("reference_files"):
             # Additional workflow: standalone reference CSVs instead of one workbook —
             # see core/mapping_engine.run_mapping_from_reference_files + REFERENCE_FILES.md.
             input_paths = [
@@ -132,8 +184,9 @@ def run_agent(request: dict) -> dict:
                 result = run_mapping(input_path, cfg)
         else:
             raise ValueError(
-                "request must include either 'input' (a workbook) or "
-                "'reference_files' (standalone reference CSVs) — see REFERENCE_FILES.md"
+                "request must include 'input' (a single workbook/CSV), 'workbooks' "
+                "(multiple workbooks to merge — see README.md §14), or 'reference_files' "
+                "(standalone reference CSVs) — see REFERENCE_FILES.md"
             )
 
         file_map = {"NEO": "NEO.csv", "LAO": "LAO.csv"}
@@ -162,6 +215,31 @@ def run_agent(request: dict) -> dict:
         out_locations["Normalized"] = loc
         if request.get("return_inline"):
             out_inline["Normalized"] = base64.b64encode(norm.to_csv(index=False).encode()).decode()
+
+        # Business-rule exclusion (core/exclusions.py): rows removed from NEO.csv/LAO.csv
+        # entirely because of what they're about (a StrategyTaskDescription keyword
+        # match), combined across targets into one companion file. Only written when at
+        # least one target was actually built (result["outputs"] non-empty) — mirrors
+        # "Normalized" always being written, but there's no meaningful excluded-components
+        # file if nothing was ever mapped in the first place.
+        if result["outputs"]:
+            excl = result["excluded_components"]
+            loc = storage.write_csv(excl, "ExcludedComponents.csv", run_id)
+            out_locations["ExcludedComponents"] = loc
+            if request.get("return_inline"):
+                out_inline["ExcludedComponents"] = base64.b64encode(excl.to_csv(index=False).encode()).decode()
+
+        # Keep-latest-date deduplication (core/deduplication.py): older duplicate rows
+        # removed from NEO.csv/LAO.csv (same asset+component+modifier+task, an older
+        # planned date than another row for that same group), combined across targets
+        # into one companion file. Same "only if something was built" convention as
+        # ExcludedComponents above.
+        if result["outputs"]:
+            dup = result["duplicate_dates"]
+            loc = storage.write_csv(dup, "DuplicateDates.csv", run_id)
+            out_locations["DuplicateDates"] = loc
+            if request.get("return_inline"):
+                out_inline["DuplicateDates"] = base64.b64encode(dup.to_csv(index=False).encode()).decode()
 
         response = {
             "status": "succeeded",

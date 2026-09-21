@@ -1,5 +1,18 @@
-"""Post-build exception detection — flags rows already written into NEO.csv/LAO.csv
-that are still missing critical data, or hold gibberish in a critical field.
+"""Post-build exception detection — NEO_Exceptions.csv/LAO_Exceptions.csv, covering two
+different severities of the same underlying idea ("this row can't be trusted/keyed the
+way it stands"), both driven by this module:
+
+  - `find_exceptions()`: an AUDIT. A row that's still missing a critical field, or holds
+    gibberish in one, is flagged with `_exception_reason` but left in NEO.csv/LAO.csv
+    exactly as built — a companion review view, not a quarantine.
+  - `split_blank_pair()`: a REMOVAL. A row whose ComponentCode AND ModifierCode are
+    BOTH blank — the AMT-key pair together, not either one alone — carries no usable
+    component identity at all, so it's actually taken out of NEO.csv/LAO.csv and
+    diverted here instead. Every row this function returns gets
+    `_removed_from_output=True`; every row `find_exceptions()` flags gets `False` — the
+    two are combined into one file by mapping_engine.py, and that column is how a
+    reader tells "still shipped, please review" from "removed, no longer in NEO/LAO"
+    without needing to parse the reason text.
 
 This is a different, later check than core/normalizer.py's pre-build quarantine:
 normalizer decides whether a SOURCE row is admissible at all (raw customer-file
@@ -7,15 +20,9 @@ columns, before the canonical NEO/LAO schema exists) — a row it rejects never 
 NEO/LAO row in the first place, and its "Normalized.csv"/"Exceptions.csv" output is a
 single combined file across both targets. This module runs strictly AFTER
 builders.build_target() and cross_reference.enrich() — i.e. against the final canonical
-row a customer actually receives — and produces one companion file PER TARGET
-(NEO_Exceptions.csv / LAO_Exceptions.csv). A row can clear normalizer's checks (it has a
-real join key/identity) and still land here, e.g. its AssetName or ComponentCode never
-resolved to any source column and no cross-reference join recovered it either.
-
-Flagged rows are a read-only audit, not a quarantine: they are NOT removed from
-NEO.csv/LAO.csv — the exception file is a companion view for review, output alongside
-the main CSV, same as the project's existing "never invent, always auditable" pattern
-elsewhere (see core/cross_reference.py).
+row a customer actually receives. A row can clear normalizer's checks (it has a real
+join key/identity) and still land here, e.g. its AssetName never resolved to any source
+column and no cross-reference join recovered it either.
 
 `critical_fields` deliberately does not mean "every blank cell in the row" — many
 fields are legitimately blank by this project's own design (e.g. FrequencyValue for
@@ -25,6 +32,9 @@ default critical set (AssetName, SerialNumber, ComponentCode, ModifierCode) is e
 the identity + AMT-key fields this project already treats as load-bearing — the same
 fields the downstream Snowflake key is built from (see core/cross_reference.py) — so a
 blank there means the row can't be keyed downstream, not just that one column is thin.
+By the time `find_exceptions()` runs, every both-blank ComponentCode/ModifierCode row
+has already been pulled out by `split_blank_pair()` — so its own ComponentCode/
+ModifierCode checks only ever catch the milder "just one of the pair is blank" case now.
 """
 from __future__ import annotations
 import pandas as pd
@@ -80,4 +90,26 @@ def find_exceptions(out: pd.DataFrame, rules: dict) -> pd.DataFrame:
     flagged = reasons.notna()
     exceptions = out[flagged].copy()
     exceptions["_exception_reason"] = reasons[flagged]
+    exceptions["_removed_from_output"] = False
     return exceptions
+
+
+def split_blank_pair(out: pd.DataFrame, primary_field: str, secondary_field: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return (kept, removed). `removed` holds rows where BOTH `primary_field` and
+    `secondary_field` are blank (not either one alone — see module docstring), with
+    `_exception_reason` and `_removed_from_output=True` already set so the caller can
+    concat it straight onto find_exceptions()'s result. `kept` is everything else,
+    unchanged.
+
+    A missing field name (this target's schema doesn't have it) is a no-op — kept=out,
+    removed=empty — same convention as core/exclusions.py's split_excluded().
+    """
+    if out.empty or primary_field not in out.columns or secondary_field not in out.columns:
+        return out, out.iloc[0:0].copy()
+
+    both_blank = _is_blank(out[primary_field]) & _is_blank(out[secondary_field])
+    removed = out[both_blank].copy()
+    removed["_exception_reason"] = f"missing {primary_field} and {secondary_field} (removed from output)"
+    removed["_removed_from_output"] = True
+    kept = out[~both_blank].copy()
+    return kept, removed

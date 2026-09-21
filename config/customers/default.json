@@ -64,7 +64,47 @@
       "gibberish"
     ]
   },
-  "__comment_exceptions": "Post-build audit (core/exceptions.py), run on the FINAL NEO/LAO rows after mapping + cross-reference enrichment. Flagged rows are written to NEO_Exceptions.csv/LAO_Exceptions.csv for review — they stay in NEO.csv/LAO.csv unchanged, this is a companion view, not a quarantine. critical_fields/gibberish_fields apply to whichever of them exist in a given target's output_columns.",
+  "__comment_deduplication": "Keep-latest-date filter (core/deduplication.py), per target. Within each group of NEO rows sharing identical group_by field values (same task, different planned dates), only the row with the latest date_field value survives — older duplicates are removed to DuplicateDates.csv. No 'LAO' entry here deliberately: LAO has no field in this shape's schema that's actually populated with a start-date-equivalent value (its only date fields, StrategyDate/LastStrategyDate, are enrichment/constant placeholders always blank today), so the rule would be a no-op there anyway — add one if/when that changes.",
+  "deduplication": {
+    "NEO": {
+      "group_by": [
+        "AssetName",
+        "ComponentCode",
+        "ModifierCode",
+        "TaskCounterCode"
+      ],
+      "date_field": "NewStrategyDate"
+    }
+  },
+  "__comment_exclusions": "Business-rule row filter (core/exclusions.py), applied to the FINAL NEO/LAO rows (after mapping + cross-reference enrichment + ConfidenceScore), before the exception audit. A row whose `field` value contains any `keywords` entry as a case-insensitive substring is REMOVED from NEO.csv/LAO.csv and written instead to the combined ExcludedComponents.csv (tagged with which target and keyword matched) — not a data-quality decision, a business-content one.",
+  "exclusions": {
+    "field": "StrategyTaskDescription",
+    "keywords": [
+      "Hose",
+      "Valve Set",
+      "Harness",
+      "Service Suspension",
+      "Slew Bearing Inspection",
+      "Coolant Engine",
+      "Cooling",
+      "Insp",
+      "Safety",
+      "Turbo",
+      "clean",
+      "Operators Seat",
+      "Fuel",
+      "Cabin",
+      "Battery",
+      "Batteries",
+      "Air Cond",
+      "Aircond",
+      "Seat Belt",
+      "High Risk Hose",
+      "Harnesss Service",
+      "Ladder"
+    ]
+  },
+  "__comment_exceptions": "Post-build audit (core/exceptions.py), run on the FINAL NEO/LAO rows after mapping + cross-reference enrichment. Two severities land in the same NEO_Exceptions.csv/LAO_Exceptions.csv, distinguished by the _removed_from_output column: rows flagged for a single blank critical_fields/gibberish_fields entry stay in NEO.csv/LAO.csv unchanged (a companion review view); rows where ComponentCode AND ModifierCode are BOTH blank are actually removed from NEO.csv/LAO.csv (see core/exceptions.py's split_blank_pair — hardcoded to that field pair, not configurable here, since it's the AMT-key pair specifically, not an arbitrary list).",
   "exceptions": {
     "critical_fields": [
       "AssetName",

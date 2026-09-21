@@ -1,9 +1,23 @@
 """AMT cross-reference enrichment — fills ComponentCode / ModifierCode / SerialNumber
-(and, for LAO, AssetName) from the per-workbook-shape lookup tables in
-prompts/cross-references/, for the shapes where the customer file itself doesn't
-already carry them. These three fields (SerialNumber + ComponentCode + ModifierCode)
-are the composite key the downstream Snowflake population job joins on, so a genuine
-gap here isn't just a cosmetic blank cell — it's a row Snowflake can't key at all.
+(and, for LAO, AssetName) from the per-workbook-shape lookup tables, for the shapes
+where the customer file itself doesn't already carry them. These three fields
+(SerialNumber + ComponentCode + ModifierCode) are the composite key the downstream
+Snowflake population job joins on, so a genuine gap here isn't just a cosmetic blank
+cell — it's a row Snowflake can't key at all.
+
+Source of the lookup CSVs themselves (fmg_cross-reference.csv, rio-tinto_cross-
+reference.csv, bhp_cross-reference.csv): a Blob container, when `settings.
+CROSS_REFERENCE_BLOB_CONTAINER` is set, is tried FIRST; `prompts/cross-references/`
+(bundled with the code) is the fallback — used automatically when no container is
+configured, or when fetching a specific file from it fails for any reason (not found,
+auth, network). This lets an operator update these lookup tables by uploading a new
+blob, no redeploy needed, while the bundled copies keep everything working out of the
+box with zero configuration. See _read_xref_bytes below for exactly how, and
+xref_sources() for how a fallback gets surfaced in mapping_report.warnings (see
+mapping_engine.py). WHICH file a given workbook needs is decided the same way it always
+has been: by `prompt_variant`, itself detected from the input file's own name (see
+settings.detect_prompt_variant) — this module only changed WHERE that file's bytes
+come from, not which file gets picked for which workbook shape.
 
 This runs strictly AFTER builders.build_target(), and only ever fills a cell that is
 still blank — it never overwrites a value the customer file itself provided. When no
@@ -50,19 +64,59 @@ shaped differently (see prompts/appendix.*.md for the verified column layouts):
     like the other two. This shape has no LAO/measurement-points sheet at all.
 """
 from __future__ import annotations
+import io
 import re
 from functools import lru_cache
 
 import pandas as pd
 
-from .settings import ROOT
+from .settings import ROOT, settings
+from . import storage
 
 XREF_DIR = ROOT / "prompts" / "cross-references"
+
+# {cross-reference filename: "blob" | "local" | "local_fallback"} for every file
+# actually read so far this process — see xref_sources() below.
+_XREF_SOURCE_LOG: dict[str, str] = {}
+
+
+def _read_xref_bytes(name: str) -> tuple[bytes, str]:
+    """(raw CSV bytes, source) for one cross-reference filename — blob first (when
+    configured), prompts/cross-references/ as the fallback. See module docstring.
+
+    "local_fallback" (blob WAS configured but this specific fetch failed) is
+    deliberately distinguished from plain "local" (no blob container configured at
+    all, the normal zero-config case) — the former is worth surfacing to an operator
+    (something isn't working as configured); the latter is completely expected and not
+    warning-worthy on its own.
+    """
+    local_path = XREF_DIR / name
+    if not settings.CROSS_REFERENCE_BLOB_CONTAINER:
+        return local_path.read_bytes(), "local"
+    try:
+        return storage.fetch_blob_bytes(settings.CROSS_REFERENCE_BLOB_CONTAINER, name), "blob"
+    except Exception:
+        # Blob configured but unavailable for this file (not found, auth, network) —
+        # fall back to the bundled copy. If THAT doesn't exist either, read_bytes()
+        # raises and this correctly fails loudly rather than silently skipping
+        # enrichment — there's genuinely nowhere left to get the data from.
+        return local_path.read_bytes(), "local_fallback"
+
+
+def xref_sources() -> dict[str, str]:
+    """{cross-reference filename: "blob"|"local"|"local_fallback"} for every file
+    actually read this process's lifetime. Exposed so mapping_engine.py can surface a
+    "local_fallback" case in mapping_report.warnings without this module needing to
+    know the report's shape.
+    """
+    return dict(_XREF_SOURCE_LOG)
 
 
 @lru_cache(maxsize=8)
 def _load_csv(name: str) -> pd.DataFrame:
-    return pd.read_csv(XREF_DIR / name, dtype=str, keep_default_na=False, encoding="utf-8-sig")
+    data, source = _read_xref_bytes(name)
+    _XREF_SOURCE_LOG[name] = source
+    return pd.read_csv(io.BytesIO(data), dtype=str, keep_default_na=False, encoding="utf-8-sig")
 
 
 @lru_cache(maxsize=8)

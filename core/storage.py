@@ -182,3 +182,36 @@ def get_storage(output_dir: str | None = None):
     if settings.STORAGE_BACKEND == "azure_blob":
         return AzureBlobStorage()
     return LocalStorage(output_dir)
+
+
+def fetch_blob_bytes(container: str, blob_name: str) -> bytes:
+    """Download one blob's raw bytes for a caller that already knows exactly which
+    container + blob it wants — e.g. core/cross_reference.py's blob-priority
+    cross-reference lookup. A standalone function rather than an AzureBlobStorage
+    method: that class's input/output-container derivation (mirroring the input blob's
+    "inbound"->"outbound" naming, etc.) doesn't apply here, there's just one specific,
+    already-known blob to fetch. Reuses the same connection-string-or-Entra-ID auth
+    resolution as AzureBlobStorage — independent of STORAGE_BACKEND, so this works even
+    when the rest of a run is using LocalStorage for its actual input/output files.
+
+    Raises on any failure (blob not found, auth, network) — this function has no
+    opinion on what "not available" should mean to its caller; see
+    core/cross_reference.py for how it turns a raised exception here into a fallback.
+    """
+    if settings.AZURE_STORAGE_CONNECTION_STRING:
+        from azure.storage.blob import BlobServiceClient
+        service = BlobServiceClient.from_connection_string(settings.AZURE_STORAGE_CONNECTION_STRING)
+        client = service.get_blob_client(container=container, blob=blob_name)
+    elif settings.AZURE_STORAGE_ACCOUNT_URL:
+        from azure.identity import DefaultAzureCredential
+        from azure.storage.blob import BlobClient
+        client = BlobClient(
+            account_url=settings.AZURE_STORAGE_ACCOUNT_URL, container_name=container,
+            blob_name=blob_name, credential=DefaultAzureCredential(),
+        )
+    else:
+        raise RuntimeError(
+            "Neither AZURE_STORAGE_CONNECTION_STRING nor AZURE_STORAGE_ACCOUNT_URL is "
+            "set — required to fetch a blob."
+        )
+    return client.download_blob().readall()

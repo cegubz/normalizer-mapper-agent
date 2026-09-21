@@ -116,6 +116,17 @@ class Settings:
     # --- Local paths (used by the local storage backend / CLI) ---
     LOCAL_OUTPUT_DIR: str = os.getenv("LOCAL_OUTPUT_DIR", str(ROOT / "_out"))
 
+    # --- Cross-reference source (core/cross_reference.py) ---
+    # Priority source for the AMT cross-reference lookup CSVs (fmg_cross-reference.csv,
+    # rio-tinto_cross-reference.csv, bhp_cross-reference.csv), when set. Falls back to
+    # prompts/cross-references/ (bundled with the code) when this is unset, or when a
+    # specific file can't be fetched from the blob for any reason (not found, auth,
+    # network) — see core/cross_reference.py for exactly how. Auth reuses
+    # AZURE_STORAGE_CONNECTION_STRING / AZURE_STORAGE_ACCOUNT_URL above; no separate
+    # credential to configure, and this is independent of STORAGE_BACKEND (input/output
+    # files can stay local while cross-reference lookups come from blob, or vice versa).
+    CROSS_REFERENCE_BLOB_CONTAINER: str = os.getenv("CROSS_REFERENCE_BLOB_CONTAINER", "")
+
 
 settings = Settings()
 

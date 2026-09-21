@@ -31,7 +31,16 @@
     "reject_rules": ["missing_join_key", "missing_identity", "banner_row", "gibberish"]
   },
 
-  "__comment_exceptions": "Post-build audit (core/exceptions.py) on the FINAL NEO/LAO rows, after mapping + cross-reference enrichment. Flagged rows go to NEO_Exceptions.csv/LAO_Exceptions.csv for review; they stay in NEO.csv/LAO.csv unchanged. Keep this list short and load-bearing — every other field is legitimately blank sometimes by this project's design, and flagging those would bury real exceptions in noise.",
+  "__comment_deduplication": "Keep-latest-date filter (core/deduplication.py), per target. Within each group of rows sharing identical group_by field values (same task, different planned dates), only the row with the latest date_field value survives; older duplicates go to DuplicateDates.csv. No entry for a target = no-op for it. Only wire this up for a target that has a REAL, populated date field for 'when this task starts' in this customer's data — don't default to a field that's always blank.",
+  "deduplication": {},
+
+  "__comment_exclusions": "Business-rule row filter (core/exclusions.py) on the FINAL NEO/LAO rows, before the exception audit below. A row whose `field` value contains any `keywords` entry (case-insensitive substring) is REMOVED from NEO.csv/LAO.csv and written to the combined ExcludedComponents.csv instead. Empty keywords = no-op (nothing excluded) — this is a customer-specific business decision, not a default; fill in only the categories THIS customer actually wants kept out of NEO/LAO.",
+  "exclusions": {
+    "field": "StrategyTaskDescription",
+    "keywords": []
+  },
+
+  "__comment_exceptions": "Post-build audit + removal (core/exceptions.py) on the FINAL NEO/LAO rows, after mapping + cross-reference enrichment. Rows with a single blank critical_fields/gibberish_fields entry are flagged (stay in NEO.csv/LAO.csv); rows with BOTH ComponentCode and ModifierCode blank are removed. Either way they land in NEO_Exceptions.csv/LAO_Exceptions.csv, distinguished by _removed_from_output. Keep critical_fields short and load-bearing — every other field is legitimately blank sometimes by this project's design, and flagging those would bury real exceptions in noise.",
   "exceptions": {
     "critical_fields": ["AssetName", "SerialNumber", "ComponentCode", "ModifierCode"],
     "gibberish_fields": ["AssetName", "SerialNumber", "ComponentCode", "ModifierCode"]
